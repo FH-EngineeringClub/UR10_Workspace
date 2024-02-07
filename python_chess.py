@@ -1,16 +1,17 @@
 """
 import python-chess and stockfish to play chess
 """
+
+import platform
+import subprocess
 import chess
 import chess.svg
 from stockfish import Stockfish
-import platform
-import subprocess
 
 osSystem = platform.system()  # Get the OS
 if osSystem == "Darwin":
     stockfishPath = subprocess.run(
-        ["which", "stockfish"], capture_output=True, text=True
+        ["which", "stockfish"], capture_output=True, text=True, check=True
     ).stdout.strip("\n")  # noqa: E501
 else:
     exit("No binary or executable found for stockfish")
