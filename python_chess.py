@@ -4,8 +4,18 @@ import python-chess and stockfish to play chess
 import chess
 import chess.svg
 from stockfish import Stockfish
+import platform
+import subprocess
 
-stockfish = Stockfish(path="/usr/local/Cellar/stockfish/16/bin/stockfish")
+osSystem = platform.system()  # Get the OS
+if osSystem == "Darwin":
+    stockfishPath = subprocess.run(
+        ["which", "stockfish"], capture_output=True, text=True
+    ).stdout.strip("\n")  # noqa: E501
+else:
+    exit("No binary or executable found for stockfish")
+
+stockfish = Stockfish(path=stockfishPath)
 stockfish.set_depth(20)  # How deep the AI looks
 stockfish.set_skill_level(20)  # Highest rank stockfish
 stockfish.get_parameters()  # Get all the parameters
