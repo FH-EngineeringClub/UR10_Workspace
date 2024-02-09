@@ -4,7 +4,8 @@ Simple python script to test stockfish and python-chess.
 
 - Install [stockfish](https://pypi.org/project/stockfish/) and [python-chess](https://pypi.org/project/chess/) with `pip install -r requirements.txt`
 
-- set line 5 of python_chess.py to the binary or executable installed by [stockfish](https://pypi.org/project/stockfish/)
+- Install the stockfish binary with `brew install stockfish` on macOS or by downloading [here](https://stockfishchess.org/download/) on windows
+    It may be helpful to add [stockfish to PATH](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53) on windows
 
 - Install [svg preview for VS code](https://marketplace.visualstudio.com/items?itemName=jock.svg)
 

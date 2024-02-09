@@ -13,6 +13,8 @@ if osSystem == "Darwin":
     stockfishPath = subprocess.run(
         ["which", "stockfish"], capture_output=True, text=True, check=True
     ).stdout.strip("\n")  # noqa: E501
+elif osSystem == "Windows":
+    stockfishPath = input("Please enter the full path to the stockfish executable:")
 else:
     exit("No binary or executable found for stockfish")
 
@@ -37,9 +39,18 @@ def display_board():
 display_board()  # Display the board
 
 while not board.is_game_over():
-    inputmove = input("Input move (SAN format):")  # Get the move from the user
-    valid_move = chess.Move.from_uci(inputmove) in board.legal_moves
-    if valid_move is True:
+    inputmove = input(
+        "Input move or enter 'moves' for a list of legal moves (SAN format):"
+    )  # Get the move from the user
+
+    valid_move = (
+        chess.Move.from_uci(inputmove) in board.legal_moves
+    )  # Check if the move is valid
+
+    if inputmove == "moves":
+        print("Legal moves:", board.legal_moves)  # Print the legal moves
+
+    elif valid_move is True:
         board.push_san(inputmove)  # Push the move to the board
 
         display_board()  # Display the board
