@@ -65,5 +65,4 @@ while not board.is_game_over():
     else:
         print("Not a legal move, Please try again")
 
-
 print(board.outcome())  # Print the winner of the game
