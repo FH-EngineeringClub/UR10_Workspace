@@ -15,3 +15,9 @@ Simple python script to test stockfish and python-chess.
 - Preview chess.svg in VS code
 
 - Run python_chess.py and input your move in SAN format (e.g. a2a4 or e2e4)
+
+## UR10 Tool Control
+
+For macOS, install the following dependences: `brew install cmake` `brew install boost` `pip install ur-rtde --use-pep517`  
+
+More information can be found [here](https://sdurobotics.gitlab.io/ur_rtde/installation/installation.html)  
