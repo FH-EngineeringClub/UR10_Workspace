@@ -76,9 +76,9 @@ def lower_piece(pos):
 f = open("setup.json", encoding="utf-8")
 data = json.load(f)
 
-move = input("Enter move (SAN format): ")
-move_from = move[:2]
-move_to = move[-2:]
+move = input("Enter move (SAN format): ")  # e.g. "e2e4" or "e7e5"
+move_from = move[:2]  # from square
+move_to = move[-2:]  # to square
 from_position = data[move_from]
 to_position = data[move_to]
 
