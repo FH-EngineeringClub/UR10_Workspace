@@ -35,7 +35,7 @@ Simple python script to test stockfish and python-chess.
 `sudo apt-get install libboost-all-dev`  
 `sudo add-apt-repository ppa:sdurobotics/ur-rtde`  
 `sudo apt-get update`  
-`sudo apt install librtde librtde-dev`
+`sudo apt install librtde librtde-dev`  
 `pip install ur-rtde --use-pep517`
 
 ## Resources
