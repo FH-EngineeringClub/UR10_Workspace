@@ -8,16 +8,16 @@ rtde_io_ = rtde_io.RTDEIOInterface("192.168.2.81")
 rtde_receive_ = rtde_receive.RTDEReceiveInterface("192.168.2.81")
 control_interface = rtde_control.RTDEControlInterface("192.168.2.81")
 
-ANGLE = 45  # angle between the robot base and the chess board (in degrees)
-DX = 440.37  # Home TCP position relative to base (in mm)
-DY = -199.05
+ANGLE = 27.62  # angle between the robot base and the chess board (in degrees)
+DX = 421.8  # Home TCP position relative to base (in mm)
+DY = -231.24
 
-BOARD_HEIGHT = 0.212  # height for the electromagnet to attach to pieces (in meters), measured as TCP Z relative to base
+BOARD_HEIGHT = 0.22664  # height for the electromagnet to attach to pieces (in meters), measured as TCP Z relative to base
 LIFT_HEIGHT = 0.40  # height of the lift (in meters)
 
-TCP_RX = 1  # rx (x rotation of TCP in radians)
-TCP_RY = -2.9683  # ry (y rotation of TCP in radians)
-TCP_RZ = -0.0035  # rz (z rotation of TCP in radians)
+TCP_RX = 0.989  # rx (x rotation of TCP in radians)
+TCP_RY = -2.9290  # ry (y rotation of TCP in radians)
+TCP_RZ = -0.0077  # rz (z rotation of TCP in radians)
 
 
 def translate(x, y):

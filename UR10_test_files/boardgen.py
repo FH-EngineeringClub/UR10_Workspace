@@ -16,7 +16,7 @@ def generate_json():
                 * (
                     number - 1
                 ),  # set 25.4 to the offset between center of each square in mm
-                "y": -1 * 42 * (i - 1),
+                "y": 42 * (i - 1),
             }
 
     return base_data
