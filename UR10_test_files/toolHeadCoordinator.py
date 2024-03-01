@@ -4,9 +4,9 @@ import rtde_io
 import rtde_receive
 import rtde_control
 
-rtde_io_ = rtde_io.RTDEIOInterface("192.168.56.101")
-rtde_receive_ = rtde_receive.RTDEReceiveInterface("192.168.56.101")
-control_interface = rtde_control.RTDEControlInterface("192.168.56.101")
+rtde_io_ = rtde_io.RTDEIOInterface("192.168.2.81")
+rtde_receive_ = rtde_receive.RTDEReceiveInterface("192.168.2.81")
+control_interface = rtde_control.RTDEControlInterface("192.168.2.81")
 
 # Set the tool digital output on and off
 print("tool on")
@@ -25,15 +25,15 @@ wrist_2_radians = math.radians(0)
 wrist_3_radians = math.radians(0)
 
 # control_interface.getCurrentPosition()
-control_interface.moveJ(
-    [
-        base_radians,
-        shoulder_radians,
-        elbow_radians,
-        wrist_1_radians,
-        wrist_2_radians,
-        wrist_3_radians,
-    ],  # q: joint positions
-    0.5,  # speed: joint speed of leading axis [rad/s]
-    0.5,  # acceleration: joint acceleration of leading axis [rad/s^2]
-)
+# control_interface.moveJ(
+#     [
+#         base_radians,
+#         shoulder_radians,
+#         elbow_radians,
+#         wrist_1_radians,
+#         wrist_2_radians,
+#         wrist_3_radians,
+#     ],  # q: joint positions
+#     0.5,  # speed: joint speed of leading axis [rad/s]
+#     0.5,  # acceleration: joint acceleration of leading axis [rad/s^2]
+# )
