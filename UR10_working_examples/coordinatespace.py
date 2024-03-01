@@ -11,8 +11,13 @@ control_interface = rtde_control.RTDEControlInterface("192.168.56.101")
 ANGLE = 45  # angle between the robot base and the chess board (in degrees)
 DX = -380  # Home TCP position relative to base (in mm)
 DY = -500
+
 BOARD_HEIGHT = 0.20  # height for the electromagnet to attach to pieces (in meters), measured as TCP Z relative to base
 LIFT_HEIGHT = 0.40  # height of the lift (in meters)
+
+TCP_RX = 0.546  # rx (x rotation of TCP in radians)
+TCP_RY = 3.062  # ry (y rotation of TCP in radians)
+TCP_RZ = 0.045  # rz (z rotation of TCP in radians)
 
 
 def translate(x, y):
@@ -31,9 +36,9 @@ def move_to_square(pos, height):
             robot_position[0] / 1000,  # x
             robot_position[1] / 1000,  # y
             height,  # z (height of the chess board)
-            0.546,  # rx (x rotation of TCP in radians)
-            3.062,  # ry (y rotation of TCP in radians)
-            0.045,  # rz (z rotation of TCP in radians)
+            TCP_RX,  # rx (x rotation of TCP in radians)
+            TCP_RY,  # ry (y rotation of TCP in radians)
+            TCP_RZ,  # rz (z rotation of TCP in radians)
         ],
         0.5,  # speed: speed of the tool [m/s]
         0.3,  # acceleration: acceleration of the tool [m/s^2]
@@ -47,9 +52,9 @@ def lift_piece(pos):
             robot_position[0] / 1000,  # x
             robot_position[1] / 1000,  # y
             LIFT_HEIGHT,  # z (height to lift piece)
-            0.546,  # rx (x rotation of TCP in radians)
-            3.062,  # ry (y rotation of TCP in radians)
-            0.045,  # rz (z rotation of TCP in radians)
+            TCP_RX,  # rx (x rotation of TCP in radians)
+            TCP_RY,  # ry (y rotation of TCP in radians)
+            TCP_RZ,  # rz (z rotation of TCP in radians)
         ],
         0.5,  # speed: speed of the tool [m/s]
         0.3,  # acceleration: acceleration of the tool [m/s^2]
@@ -63,9 +68,9 @@ def lower_piece(pos):
             robot_position[0] / 1000,  # x
             robot_position[1] / 1000,  # y
             BOARD_HEIGHT,  # z (height to lift piece)
-            0.546,  # rx (x rotation of TCP in radians)
-            3.062,  # ry (y rotation of TCP in radians)
-            0.045,  # rz (z rotation of TCP in radians)
+            TCP_RX,  # rx (x rotation of TCP in radians)
+            TCP_RY,  # ry (y rotation of TCP in radians)
+            TCP_RZ,  # rz (z rotation of TCP in radians)
         ],
         0.5,  # speed: speed of the tool [m/s]
         0.3,  # acceleration: acceleration of the tool [m/s^2]
