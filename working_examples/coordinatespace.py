@@ -11,7 +11,7 @@ control_interface = rtde_control.RTDEControlInterface("192.168.56.101")
 ANGLE = 45  # angle between the robot base and the chess board (in degrees)
 DX = -380  # Home TCP position relative to base (in mm)
 DY = -500
-BOARD_HEIGHT = 0.20  # height for the electromagnet to attach to pieces (in meters)
+BOARD_HEIGHT = 0.20  # height for the electromagnet to attach to pieces (in meters), measured as TCP Z relative to base
 LIFT_HEIGHT = 0.40  # height of the lift (in meters)
 
 
@@ -82,9 +82,14 @@ move_to = move[-2:]  # to square
 from_position = data[move_from]
 to_position = data[move_to]
 
-move_to_square(from_position, BOARD_HEIGHT)
-rtde_io_.setToolDigitalOut(0, True)  # energize the electromagnet
-lift_piece(from_position)
-move_to_square(to_position, LIFT_HEIGHT)
-lower_piece(to_position)
-rtde_io_.setToolDigitalOut(0, False)  # de-energize the electromagnet
+
+def direct_move_piece():
+    move_to_square(from_position, BOARD_HEIGHT)
+    rtde_io_.setToolDigitalOut(0, True)  # energize the electromagnet
+    lift_piece(from_position)
+    move_to_square(to_position, LIFT_HEIGHT)
+    lower_piece(to_position)
+    rtde_io_.setToolDigitalOut(0, False)  # de-energize the electromagnet
+
+
+direct_move_piece()
