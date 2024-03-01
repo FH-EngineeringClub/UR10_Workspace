@@ -11,7 +11,8 @@ def generate_json():
         for i in range(1, 9):
             letter = letters[i - 1]
             base_data[letter + str(number)] = {
-                "x": 42
+                "x": -1
+                * 42
                 * (
                     number - 1
                 ),  # set 25.4 to the offset between center of each square in mm
