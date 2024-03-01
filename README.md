@@ -8,7 +8,7 @@ Simple python script to test stockfish and python-chess.
 
 - Install the stockfish binary with `brew install stockfish` on macOS or by downloading [here](https://stockfishchess.org/download/) on windows
 
-    It may be helpful to add [stockfish to PATH](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53) on windows
+  It may be helpful to add [stockfish to PATH](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53) on windows
 
 - Install [svg preview for VS code](https://marketplace.visualstudio.com/items?itemName=jock.svg)
 
@@ -16,8 +16,30 @@ Simple python script to test stockfish and python-chess.
 
 - Run python_chess.py and input your move in SAN format (e.g. a2a4 or e2e4)
 
-## UR10 Tool Control
+## [ur_rtde Installation](https://sdurobotics.gitlab.io/ur_rtde/installation/installation.html)
 
-For macOS, install the following dependences: `brew install cmake` `brew install boost` `pip install ur-rtde --use-pep517`  
+### Windows
 
-More information can be found [here](https://sdurobotics.gitlab.io/ur_rtde/installation/installation.html)  
+[Install boost](https://www.geeksforgeeks.org/how-to-install-c-boost-libraries-on-windows/)  
+[cmake](https://cmake.org/download/) may also be required  
+`pip install ur-rtde --use-pep517`
+
+### MacOS
+
+`brew install cmake`  
+`brew install boost`  
+`pip install ur-rtde --use-pep517`
+
+### Linux
+
+`sudo apt-get install libboost-all-dev`  
+`sudo add-apt-repository ppa:sdurobotics/ur-rtde`  
+`sudo apt-get update`  
+`sudo apt install librtde librtde-dev`
+`pip install ur-rtde --use-pep517`
+
+## Resources
+
+[UR Real-Time Communication Guide](https://www.universal-robots.com/articles/ur/interface-communication/real-time-data-exchange-rtde-guide/)
+
+[UR Real-Time Communication Library Documentation](https://sdurobotics.gitlab.io/ur_rtde/index.html)
