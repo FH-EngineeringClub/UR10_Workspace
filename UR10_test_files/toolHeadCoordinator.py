@@ -10,10 +10,10 @@ control_interface = rtde_control.RTDEControlInterface("192.168.2.81")
 
 # Set the tool digital output on and off
 print("tool on")
-rtde_io_.setToolDigitalOut(0, True)
+rtde_io_.setToolDigitalOut(1, True)
 sleep(3)
-rtde_io_.setToolDigitalOut(0, False)
-print("tool off")
+# rtde_io_.setToolDigitalOut(0, False)
+# print("tool off")
 
 
 # home position (0, -90, 0, -90, 0, 0)

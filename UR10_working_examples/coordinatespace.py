@@ -1,3 +1,5 @@
+from time import sleep
+import socket
 import json
 import math
 import rtde_io
@@ -9,15 +11,18 @@ rtde_receive_ = rtde_receive.RTDEReceiveInterface("192.168.2.81")
 control_interface = rtde_control.RTDEControlInterface("192.168.2.81")
 
 ANGLE = 27.62  # angle between the robot base and the chess board (in degrees)
-DX = 421.8  # Home TCP position relative to base (in mm)
-DY = -231.24
+DX = 425.5  # Home TCP position relative to base (in mm)
+DY = -241.83
 
-BOARD_HEIGHT = 0.22664  # height for the electromagnet to attach to pieces (in meters), measured as TCP Z relative to base
+BOARD_HEIGHT = 0.218  # height for the electromagnet to attach to pieces (in meters), measured as TCP Z relative to base
 LIFT_HEIGHT = 0.40  # height of the lift (in meters)
 
-TCP_RX = 0.989  # rx (x rotation of TCP in radians)
-TCP_RY = -2.9290  # ry (y rotation of TCP in radians)
-TCP_RZ = -0.0077  # rz (z rotation of TCP in radians)
+TCP_RX = 1.393  # rx (x rotation of TCP in radians)
+TCP_RY = -2.770  # ry (y rotation of TCP in radians)
+TCP_RZ = -0.085  # rz (z rotation of TCP in radians)
+
+MAGNET_HOST = "192.168.2.81"  # Replace with the IP address of your Universal Robot
+MAGNET_PORT = 30002
 
 
 def translate(x, y):
@@ -77,6 +82,34 @@ def lower_piece(pos):
     )
 
 
+def send_command_to_robot(command):
+    # Connect to the robot
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect((MAGNET_HOST, MAGNET_PORT))
+
+    # Send the command to the robot
+    sock.send(bytes(command, "utf-8"))
+
+    # Receive and print the response from the robot
+    # response = sock.recv(1024)
+    # print("Response from robot:", response)
+
+    # Close the connection
+    sock.close()
+    sleep(0.2)
+
+
+# Call the function with the desired command
+output_24 = "sec myProg():\n\
+    set_tool_voltage(24)\n\
+end\n\
+myProg()\n"
+
+output_0 = "sec myProg():\n\
+    set_tool_voltage(0)\n\
+end\n\
+myProg()\n"
+
 # Opening JSON file
 f = open("UR10_working_examples/setup.json", encoding="utf-8")
 data = json.load(f)
@@ -89,12 +122,19 @@ to_position = data[move_to]
 
 
 def direct_move_piece():
+    print("Moving piece from", move_from, "to", move_to)
     move_to_square(from_position, BOARD_HEIGHT)
-    rtde_io_.setToolDigitalOut(0, True)  # energize the electromagnet
+    print("Energizing electromagnet...")
+    send_command_to_robot(output_24)  # energize the electromagnet
+    print("Lifting piece...")
     lift_piece(from_position)
+    print("Moving piece to", move_to)
     move_to_square(to_position, LIFT_HEIGHT)
+    print("Lowering piece...")
     lower_piece(to_position)
-    rtde_io_.setToolDigitalOut(0, False)  # de-energize the electromagnet
+    print("De-energizing electromagnet...")
+    send_command_to_robot(output_0)  # de-energize the electromagnet
+    print("Piece moved successfully!")
 
 
 direct_move_piece()

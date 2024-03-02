@@ -5,9 +5,9 @@ import rtde_io
 import rtde_receive
 import rtde_control
 
-rtde_io_ = rtde_io.RTDEIOInterface("192.168.56.101")
-rtde_receive_ = rtde_receive.RTDEReceiveInterface("192.168.56.101")
-control_interface = rtde_control.RTDEControlInterface("192.168.56.101")
+rtde_io_ = rtde_io.RTDEIOInterface("192.168.2.81")
+rtde_receive_ = rtde_receive.RTDEReceiveInterface("192.168.2.81")
+control_interface = rtde_control.RTDEControlInterface("192.168.2.81")
 
 # Set the tool digital output on and off
 rtde_io_.setToolDigitalOut(0, True)
