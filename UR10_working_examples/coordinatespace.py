@@ -99,13 +99,12 @@ def send_command_to_robot(command):
     sleep(0.2)
 
 
-# Call the function with the desired command
-output_24 = "sec myProg():\n\
+OUTPUT_24 = "sec myProg():\n\
     set_tool_voltage(24)\n\
 end\n\
 myProg()\n"
 
-output_0 = "sec myProg():\n\
+OUTPUT_0 = "sec myProg():\n\
     set_tool_voltage(0)\n\
 end\n\
 myProg()\n"
@@ -125,7 +124,7 @@ def direct_move_piece():
     print("Moving piece from", move_from, "to", move_to)
     move_to_square(from_position, BOARD_HEIGHT)
     print("Energizing electromagnet...")
-    send_command_to_robot(output_24)  # energize the electromagnet
+    send_command_to_robot(OUTPUT_24)  # energize the electromagnet
     print("Lifting piece...")
     lift_piece(from_position)
     print("Moving piece to", move_to)
@@ -133,7 +132,7 @@ def direct_move_piece():
     print("Lowering piece...")
     lower_piece(to_position)
     print("De-energizing electromagnet...")
-    send_command_to_robot(output_0)  # de-energize the electromagnet
+    send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
     print("Piece moved successfully!")
 
 
