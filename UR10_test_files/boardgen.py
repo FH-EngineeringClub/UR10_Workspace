@@ -26,7 +26,7 @@ def generate_json():
 new_json_data = generate_json()
 
 # Write JSON data to a file
-with open("generated_json.json", "w") as outfile:
+with open("generated_json.json", "w", encoding="utf-8") as outfile:
     json.dump(new_json_data, outfile, indent=4)
 
 print("JSON file generated successfully!")

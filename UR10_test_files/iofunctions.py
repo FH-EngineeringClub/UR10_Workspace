@@ -1,6 +1,5 @@
 import math
 import json
-from time import sleep
 import rtde_io
 import rtde_receive
 import rtde_control
@@ -17,7 +16,7 @@ rtde_io_.setToolDigitalOut(0, False)
 print("tool off")
 
 # Opening JSON file
-f = open("positions.json")
+f = open("positions.json", encoding="utf-8")
 data = json.load(f)
 
 input_position = input("Enter the position: ")
