@@ -9,7 +9,7 @@ import chess.svg
 from stockfish import Stockfish
 
 osSystem = platform.system()  # Get the OS
-if osSystem == "Darwin":
+if osSystem == "Darwin" or "Linux":
     stockfishPath = subprocess.run(
         ["which", "stockfish"], capture_output=True, text=True, check=True
     ).stdout.strip("\n")  # noqa: E501
