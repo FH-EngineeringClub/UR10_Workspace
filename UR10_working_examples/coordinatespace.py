@@ -96,7 +96,7 @@ def send_command_to_robot(command):
 
     # Close the connection
     sock.close()
-    sleep(0.2)
+    sleep(0.2)  # Allow the piece to attach to the electromagnet
 
 
 OUTPUT_24 = "sec myProg():\n\
