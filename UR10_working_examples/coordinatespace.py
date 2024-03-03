@@ -6,9 +6,12 @@ import rtde_io
 import rtde_receive
 import rtde_control
 
-rtde_io_ = rtde_io.RTDEIOInterface("192.168.2.81")
-rtde_receive_ = rtde_receive.RTDEReceiveInterface("192.168.2.81")
-control_interface = rtde_control.RTDEControlInterface("192.168.2.81")
+HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
+HOST_PORT = 30002  # The port to send commands to the robot
+
+rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME)
+rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME)
+control_interface = rtde_control.RTDEControlInterface(HOSTNAME)
 
 ANGLE = 27.62  # angle between the robot base and the chess board (in degrees)
 DX = 425.5  # Home TCP position relative to base (in mm)
@@ -20,9 +23,6 @@ LIFT_HEIGHT = 0.40  # height of the lift (in meters)
 TCP_RX = 1.393  # rx (x rotation of TCP in radians)
 TCP_RY = -2.770  # ry (y rotation of TCP in radians)
 TCP_RZ = -0.085  # rz (z rotation of TCP in radians)
-
-MAGNET_HOST = "192.168.2.81"  # Replace with the IP address of your Universal Robot
-MAGNET_PORT = 30002
 
 
 def translate(x, y):
@@ -85,7 +85,7 @@ def lower_piece(pos):
 def send_command_to_robot(command):
     # Connect to the robot
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((MAGNET_HOST, MAGNET_PORT))
+    sock.connect((HOSTNAME, HOST_PORT))
 
     # Send the command to the robot
     sock.send(bytes(command, "utf-8"))
