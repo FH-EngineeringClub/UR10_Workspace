@@ -1,17 +1,21 @@
-# UR10 Chess AI
+# UR10 Workspace
 
-Simple python script to test stockfish and python-chess.
+Collection of python scripts to test stockfish, python-chess, and ur_rtde.
 
-## Instructions
+## Requirements
 
-- Install [stockfish](https://pypi.org/project/stockfish/) and [python-chess](https://pypi.org/project/chess/) with `pip install -r requirements.txt`
+- Python 3.12
 
+- [stockfish](https://pypi.org/project/stockfish/), [python-chess](https://pypi.org/project/chess/), and [ur_rtde](https://pypi.org/project/ur-rtde/)
+  - Installable with `pip install -r requirements.txt`
+  
 - Install the stockfish binary with `brew install stockfish` on macOS or by downloading [here](https://stockfishchess.org/download/) on windows
-
-  - For linux, download the latest 64-bit version of stockfish [here](https://stockfishchess.org/download/linux/), open with `tar -xvf stockfish-ubuntu-x86-64.tar`, and place the binary in path with `mv stockfish-ubuntu-x86-64 /usr/bin/stockfish`
   - It may be helpful to add [stockfish to PATH](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53) on windows
+  - For linux, download the latest 64-bit version of stockfish [here](https://stockfishchess.org/download/linux/), open with `tar -xvf stockfish-ubuntu-x86-64.tar`, and place the binary in path with `mv stockfish-ubuntu-x86-64 /usr/bin/stockfish`
 
 - Install [svg preview for VS code](https://marketplace.visualstudio.com/items?itemName=jock.svg)
+
+## Instructions
 
 - Preview chess.svg in VS code
 
@@ -22,8 +26,8 @@ Simple python script to test stockfish and python-chess.
 ### Windows
 
 [Install boost](https://www.geeksforgeeks.org/how-to-install-c-boost-libraries-on-windows/)  
-[cmake](https://cmake.org/download/) may also be required  
-`pip install ur-rtde --use-pep517`
+[Install cmake](https://cmake.org/download/)  
+`pip install ur-rtde`
 
 ### MacOS
 
@@ -43,4 +47,10 @@ Simple python script to test stockfish and python-chess.
 
 [UR Real-Time Communication Guide](https://www.universal-robots.com/articles/ur/interface-communication/real-time-data-exchange-rtde-guide/)
 
-[UR Real-Time Communication Library Documentation](https://sdurobotics.gitlab.io/ur_rtde/index.html)
+[ur_rtde Documentation](https://sdurobotics.gitlab.io/ur_rtde/index.html)
+
+[Python Stockfish](https://github.com/zhelyabuzhsky/stockfish)
+
+[python-chess documentation](https://python-chess.readthedocs.io/en/latest/index.html)
+
+[Stockfish and python-chess tutorial](https://github.com/rogerfitz/tutorials/blob/master/python_chess/0_Chess_Basics.ipynb)
