@@ -1,2 +1,3 @@
 chess==1.10.0
 stockfish==3.28.0
+ur-rtde==1.5.7
