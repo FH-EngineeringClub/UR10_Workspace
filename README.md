@@ -36,6 +36,7 @@ Collection of python scripts to test stockfish, python-chess, and ur_rtde.
 `sudo add-apt-repository ppa:sdurobotics/ur-rtde`  
 `sudo apt-get update`  
 `sudo apt install librtde librtde-dev`  
+`sudo apt install cmake`  
 `pip install ur-rtde --use-pep517`
 
 ## Instructions
