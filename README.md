@@ -4,8 +4,6 @@ Collection of python scripts to test stockfish, python-chess, and ur_rtde.
 
 ## Requirements
 
-- Python 3.12
-
 - [stockfish](https://pypi.org/project/stockfish/), [python-chess](https://pypi.org/project/chess/), and [ur_rtde](https://pypi.org/project/ur-rtde/)
   - Installable with `pip install -r requirements.txt`
   - ur_rtde requires additional setup for installation, see [ur_rtde Installation](#ur_rtde-installation) for details
@@ -32,15 +30,7 @@ Collection of python scripts to test stockfish, python-chess, and ur_rtde.
 
 ### Linux
 
-Python 3.12 setup _(Using a python 3.12 virtual environment is recommended)_:  
-`apt update && apt upgrade -y`  
-`apt install software-properties-common -y`  
-`add-apt-repository ppa:deadsnakes/ppa`  
-`apt update && apt install python3.12`
-`sudo apt-get install python3.12-dev`  
-`curl -sS https://bootstrap.pypa.io/get-pip.py | python3.12`  
-`sudo apt-get install python3.12-dev`  
-ur_rtde install:  
+_(Using python 3.8 recommended for compatibility)_:  
 `sudo apt-get install libboost-all-dev`  
 `sudo add-apt-repository ppa:sdurobotics/ur-rtde`  
 `sudo apt-get update`  
