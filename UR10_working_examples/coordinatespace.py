@@ -120,20 +120,20 @@ from_position = data[move_from]
 to_position = data[move_to]
 
 
-def direct_move_piece():
+def direct_move_piece(from_pos, to_pos, board_height, lift_height):
     print("Moving piece from", move_from, "to", move_to)
-    move_to_square(from_position, BOARD_HEIGHT)
+    move_to_square(from_pos, board_height)
     print("Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
     print("Lifting piece...")
-    lift_piece(from_position)
+    lift_piece(from_pos)
     print("Moving piece to", move_to)
-    move_to_square(to_position, LIFT_HEIGHT)
+    move_to_square(to_pos, lift_height)
     print("Lowering piece...")
-    lower_piece(to_position)
+    lower_piece(to_pos)
     print("De-energizing electromagnet...")
     send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
     print("Piece moved successfully!")
 
 
-direct_move_piece()
+direct_move_piece(from_position, to_position, BOARD_HEIGHT, LIFT_HEIGHT)
