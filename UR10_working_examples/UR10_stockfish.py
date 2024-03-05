@@ -2,6 +2,8 @@
 import python-chess and stockfish to play chess
 """
 
+import platform
+import subprocess
 from time import sleep
 import socket
 import json
@@ -9,8 +11,6 @@ import math
 import rtde_io
 import rtde_receive
 import rtde_control
-import platform
-import subprocess
 import chess
 import chess.svg
 from stockfish import Stockfish
