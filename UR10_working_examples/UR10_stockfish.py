@@ -205,9 +205,10 @@ while not board.is_game_over():
         if board.piece_at(target_square) is None:
             print(Fore.CYAN + "Space not occupied")
 
-            move = bestMove  # e.g. "e2e4" or "e7e5"
+            move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
             move_from = move[:2]  # from square
             move_to = move[-2:]  # to square
+            print(move_from, move_to)
             from_position = data[move_from]
             to_position = data[move_to]
             direct_move_piece(from_position, to_position, BOARD_HEIGHT, LIFT_HEIGHT)
@@ -219,9 +220,10 @@ while not board.is_game_over():
                 "removing piece...",
             )
 
-            move = bestMove  # e.g. "e2e4" or "e7e5"
+            move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
             move_from = move[:2]  # from square
             move_to = move[-2:]  # to square
+            print(move_from, move_to)
             from_position = data[move_from]
             to_position = "ex"
             direct_move_piece(from_position, to_position, BOARD_HEIGHT, LIFT_HEIGHT)
