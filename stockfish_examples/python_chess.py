@@ -63,9 +63,14 @@ while not board.is_game_over():
 
         stockfish.set_fen_position(board.fen())  # Set the position of the board
         bestMove = stockfish.get_top_moves(1)  # Get the best move
+        target_square = chess.Move.from_uci(bestMove[0]["Move"]).to_square
+
+        if board.piece_at(target_square) is None:
+            print(Fore.CYAN + "Space not occupied")
         print(
             Fore.GREEN + "Stockfish moves:", board.push_san(bestMove[0]["Move"])
         )  # Push the best move to the board
+
         display_board()  # Display the board
 
     else:
