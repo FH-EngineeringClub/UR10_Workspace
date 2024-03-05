@@ -7,6 +7,7 @@ import subprocess
 import chess
 import chess.svg
 from stockfish import Stockfish
+from colorama import Fore
 
 osSystem = platform.system()  # Get the OS
 if osSystem == "Darwin" or "Linux":
@@ -39,18 +40,23 @@ def display_board():
 display_board()  # Display the board
 
 while not board.is_game_over():
+    print(Fore.WHITE + "Legal moves:", [move.uci() for move in board.legal_moves])
     inputmove = input(
-        "Input move or enter 'moves' for a list of legal moves (SAN format):"
+        "Input move from the following legal moves (SAN format):"
     )  # Get the move from the user
+
+    user_confirmation = input("Are you sure you want to make this move? (y/n)")
+    if user_confirmation != "y":
+        print(
+            Fore.RED + "Move not confirmed, please try again"
+        )  # If the user doesn't confirm the move, ask for a new move
+        continue  # Skip the rest of the loop and start from the beginning
 
     valid_move = (
         chess.Move.from_uci(inputmove) in board.legal_moves
     )  # Check if the move is valid
 
-    if inputmove == "moves":
-        print("Legal moves:", board.legal_moves)  # Print the legal moves
-
-    elif valid_move is True:
+    if valid_move is True:
         board.push_san(inputmove)  # Push the move to the board
 
         display_board()  # Display the board
@@ -58,11 +64,11 @@ while not board.is_game_over():
         stockfish.set_fen_position(board.fen())  # Set the position of the board
         bestMove = stockfish.get_top_moves(1)  # Get the best move
         print(
-            "Stockfish moves:", board.push_san(bestMove[0]["Move"])
+            Fore.GREEN + "Stockfish moves:", board.push_san(bestMove[0]["Move"])
         )  # Push the best move to the board
         display_board()  # Display the board
 
     else:
-        print("Not a legal move, Please try again")
+        print(Fore.RED + "Not a legal move, Please try again")
 
 print(board.outcome())  # Print the winner of the game

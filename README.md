@@ -30,7 +30,7 @@ Collection of python scripts to test stockfish, python-chess, and ur_rtde.
 
 ### Linux
 
-_(Using python 3.8 recommended for compatibility)_:  
+_(Ubuntu 22.04 recommended for compatibility)_:  
 `sudo apt-get install libboost-all-dev`  
 `sudo add-apt-repository ppa:sdurobotics/ur-rtde`  
 `sudo apt-get update`  
