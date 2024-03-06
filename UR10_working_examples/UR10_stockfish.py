@@ -143,8 +143,8 @@ def display_board():
     """
     with open(
         "chess.svg", "w", encoding="utf-8"
-    ) as f:  # Open a file to write to with explicit encoding
-        f.write(chess.svg.board(board))  # Write the board to the file
+    ) as file_obj:  # Open a file to write to with explicit encoding
+        file_obj.write(chess.svg.board(board))  # Write the board to the file
 
 
 # Opening UR10 head positions JSON file
@@ -160,7 +160,9 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
     print("Lifting piece...")
     lift_piece(from_pos)
     print("Moving piece to", move_to)
-    if move_to == "ex":
+    if (
+        move_to == "ex"
+    ):  # TODO rename move_to ex in this case to some other variable (currently causes "string indices must be integers" error)
         move_to_square(to_pos, lift_height)
         print("De-energizing electromagnet...")
         send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
