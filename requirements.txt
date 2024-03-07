@@ -1,3 +1,5 @@
 chess==1.10.0
+colorama==0.4.6
+pyobjc==10.1
 stockfish==3.28.0
-ur-rtde==1.5.7
+ur_rtde==1.5.7
