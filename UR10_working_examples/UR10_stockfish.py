@@ -13,6 +13,8 @@ import rtde_receive
 import rtde_control
 import chess
 import chess.svg
+import chess.engine
+import chess.polyglot
 from stockfish import Stockfish
 from colorama import Fore
 
@@ -33,6 +35,8 @@ LIFT_HEIGHT = 0.20  # height of the lift (in meters)
 TCP_RX = 1.15  # rx (x rotation of TCP in radians)
 TCP_RY = -2.88  # ry (y rotation of TCP in radians)
 TCP_RZ = 0.004  # rz (z rotation of TCP in radians)
+
+BIN_POSITION = {"x": 300, "y": -200}  # position to move to when not in use
 
 osSystem = platform.system()  # Get the OS
 if osSystem == "Darwin" or "Linux":
@@ -176,7 +180,7 @@ def remove_piece(from_pos, board_height, lift_height):
     print("Lifting piece...")
     lift_piece(from_pos)
     print("Moving piece to ex")
-    move_to_square({"x": -360, "y": 0}, lift_height)
+    move_to_square({"x": -360, "y": 0}, lift_height)  # move to the side position
     print("De-energizing electromagnet...")
     send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
     print("Piece removed successfully!")
@@ -185,12 +189,17 @@ def remove_piece(from_pos, board_height, lift_height):
 display_board()  # Display the board
 
 while not board.is_game_over():
+    move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
+    print(Fore.CYAN + "Moving to bin position...")
+
     print(Fore.WHITE + "Legal moves:", [move.uci() for move in board.legal_moves])
     inputmove = input(
-        "Input move from the following legal moves (SAN format):"
+        Fore.BLUE + "Input move from the following legal moves (SAN format):"
     )  # Get the move from the user
 
-    user_confirmation = input("Are you sure you want to make this move? (y/n)")
+    user_confirmation = input(
+        Fore.YELLOW + "Are you sure you want to make this move? (y/n)"
+    )
     if user_confirmation != "y":
         print(
             Fore.RED + "Move not confirmed, please try again"
@@ -219,6 +228,9 @@ while not board.is_game_over():
             print(move_from, move_to)
             from_position = data[move_from]
             to_position = data[move_to]
+            print(
+                board.piece_at(chess.parse_square(move_from))
+            )  # TODO make the board height dynamic based on the piece height
             direct_move_piece(from_position, to_position, BOARD_HEIGHT, LIFT_HEIGHT)
 
         else:
@@ -246,5 +258,7 @@ while not board.is_game_over():
     else:
         print(Fore.RED + "Not a legal move, Please try again")
 
-move_to_square({"x": -360, "y": 0}, LIFT_HEIGHT)
+move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
+print(Fore.CYAN + "Moving to bin position...")
+
 print(board.outcome())  # Print the winner of the game
