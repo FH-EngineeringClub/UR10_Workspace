@@ -16,7 +16,7 @@ import chess.svg
 from stockfish import Stockfish
 from colorama import Fore
 
-HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 
 rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME)
@@ -160,20 +160,26 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
     print("Lifting piece...")
     lift_piece(from_pos)
     print("Moving piece to", move_to)
-    if (
-        move_to == "ex"
-    ):  # TODO rename move_to ex in this case to some other variable (currently causes "string indices must be integers" error)
-        move_to_square(to_pos, lift_height)
-        print("De-energizing electromagnet...")
-        send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
-        print("Piece removed successfully!")
-    else:
-        move_to_square(to_pos, lift_height)
-        print("Lowering piece...")
-        lower_piece(to_pos)
-        print("De-energizing electromagnet...")
-        send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
-        print("Piece moved successfully!")
+    move_to_square(to_pos, lift_height)
+    print("Lowering piece...")
+    lower_piece(to_pos)
+    print("De-energizing electromagnet...")
+    send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
+    print("Piece moved successfully!")
+
+
+def remove_piece(from_pos, board_height, lift_height):
+    print("Removing piece from", move_from)
+    move_to_square(from_pos, board_height)
+    print("Energizing electromagnet...")
+    send_command_to_robot(OUTPUT_24)  # energize the electromagnet
+    print("Lifting piece...")
+    lift_piece(from_pos)
+    print("Moving piece to ex")
+    move_to_square({"x": -360, "y": 0}, lift_height)
+    print("De-energizing electromagnet...")
+    send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
+    print("Piece removed successfully!")
 
 
 display_board()  # Display the board
@@ -198,7 +204,7 @@ while not board.is_game_over():
     if valid_move is True:
         board.push_san(inputmove)  # Push the move to the board
 
-        display_board()  # Display the board
+        display_board()  # Update the board svg
 
         stockfish.set_fen_position(board.fen())  # Set the position of the board
         bestMove = stockfish.get_top_moves(1)  # Get the best move
@@ -227,16 +233,18 @@ while not board.is_game_over():
             move_to = move[-2:]  # to square
             print(move_from, move_to)
             from_position = data[move_from]
-            to_position = "ex"
+            to_position = data[move_to]
+            remove_piece(to_position, BOARD_HEIGHT, LIFT_HEIGHT)
             direct_move_piece(from_position, to_position, BOARD_HEIGHT, LIFT_HEIGHT)
 
         print(
             Fore.GREEN + "Stockfish moves:", board.push_san(bestMove[0]["Move"])
         )  # Push the best move to the board
 
-        display_board()  # Display the board
+        display_board()  # Update the board svg
 
     else:
         print(Fore.RED + "Not a legal move, Please try again")
 
+move_to_square({"x": -360, "y": 0}, LIFT_HEIGHT)
 print(board.outcome())  # Print the winner of the game
