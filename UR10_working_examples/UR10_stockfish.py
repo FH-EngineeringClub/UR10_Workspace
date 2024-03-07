@@ -24,15 +24,15 @@ rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME)
 control_interface = rtde_control.RTDEControlInterface(HOSTNAME)
 
 ANGLE = 44.785  # angle between the robot base and the chess board (in degrees)
-DX = 611.63  # Home TCP position relative to base (in mm)
-DY = -354.83
+DX = 401.34  # Home TCP position relative to base (in mm)
+DY = -564.75
 
 BOARD_HEIGHT = 0.099  # height for the electromagnet to attach to pieces (in meters), measured as TCP Z relative to base
-LIFT_HEIGHT = 0.40  # height of the lift (in meters)
+LIFT_HEIGHT = 0.20  # height of the lift (in meters)
 
-TCP_RX = 0.20  # rx (x rotation of TCP in radians)
-TCP_RY = -3.111  # ry (y rotation of TCP in radians)
-TCP_RZ = -0.036  # rz (z rotation of TCP in radians)
+TCP_RX = 1.15  # rx (x rotation of TCP in radians)
+TCP_RY = -2.88  # ry (y rotation of TCP in radians)
+TCP_RZ = 0.004  # rz (z rotation of TCP in radians)
 
 osSystem = platform.system()  # Get the OS
 if osSystem == "Darwin" or "Linux":
@@ -56,8 +56,8 @@ def translate(x, y):
     """
     Rotate a point by a given angle in a 2d space
     """
-    x1 = x * math.cos(ANGLE) - y * math.sin(ANGLE)
-    y1 = x * math.sin(ANGLE) + y * math.cos(ANGLE)
+    x1 = y * math.cos(ANGLE) - x * math.sin(ANGLE)
+    y1 = y * math.sin(ANGLE) + x * math.cos(ANGLE)
     return x1 + DX, y1 + DY
 
 
