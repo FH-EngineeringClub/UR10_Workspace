@@ -16,23 +16,23 @@ import chess.svg
 from stockfish import Stockfish
 from colorama import Fore
 
-HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 
 rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME)
 rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME)
 control_interface = rtde_control.RTDEControlInterface(HOSTNAME)
 
-ANGLE = 27.62  # angle between the robot base and the chess board (in degrees)
-DX = 425.5  # Home TCP position relative to base (in mm)
-DY = -241.83
+ANGLE = 44.785  # angle between the robot base and the chess board (in degrees)
+DX = 611.63  # Home TCP position relative to base (in mm)
+DY = -354.83
 
-BOARD_HEIGHT = 0.218  # height for the electromagnet to attach to pieces (in meters), measured as TCP Z relative to base
+BOARD_HEIGHT = 0.099  # height for the electromagnet to attach to pieces (in meters), measured as TCP Z relative to base
 LIFT_HEIGHT = 0.40  # height of the lift (in meters)
 
-TCP_RX = 1.393  # rx (x rotation of TCP in radians)
-TCP_RY = -2.770  # ry (y rotation of TCP in radians)
-TCP_RZ = -0.085  # rz (z rotation of TCP in radians)
+TCP_RX = 0.20  # rx (x rotation of TCP in radians)
+TCP_RY = -3.111  # ry (y rotation of TCP in radians)
+TCP_RZ = -0.036  # rz (z rotation of TCP in radians)
 
 osSystem = platform.system()  # Get the OS
 if osSystem == "Darwin" or "Linux":
