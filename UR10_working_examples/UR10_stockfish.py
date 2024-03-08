@@ -41,18 +41,18 @@ TCP_RZ = 0.004  # rz (z rotation of TCP in radians)
 BIN_POSITION = {"x": 300, "y": -200}  # position to move to when not in use
 
 piece_heights = {
-    "k": 0.099,
-    "K": 0.099,
-    "P": 0.0584,
-    "p": 0.0584,
-    "R": 0.0628,
-    "r": 0.0628,
-    "N": 0.0703,
-    "n": 0.0703,
-    "B": 0.0787,
-    "b": 0.0787,
-    "Q": 0.0914,
-    "q": 0.0914,
+    "k": 0.0762,
+    "K": 0.0762,
+    "P": 0.0356,
+    "p": 0.0356,
+    "R": 0.0400,
+    "r": 0.0400,
+    "N": 0.0457,
+    "n": 0.0457,
+    "B": 0.0559,
+    "b": 0.0559,
+    "Q": 0.0686,
+    "q": 0.0686,
 }  # dictionary to store the heights of the pieces
 
 osSystem = platform.system()  # Get the OS
