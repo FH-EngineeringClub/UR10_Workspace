@@ -55,6 +55,13 @@ piece_heights = {
     "q": 0.0686,
 }  # dictionary to store the heights of the pieces
 
+stockfish_difficulty_level = {
+    "easy": 600,
+    "medium": 1500,
+    "expert": 2100,
+    "gm": 3500,
+}  # dictionary to store the ELO difficulty levels of stockfish
+
 osSystem = platform.system()  # Get the OS
 if osSystem == "Darwin" or "Linux":
     stockfishPath = subprocess.run(
@@ -64,11 +71,6 @@ elif osSystem == "Windows":
     stockfishPath = input("Please enter the full path to the stockfish executable:")
 else:
     exit("No binary or executable found for stockfish")
-
-stockfish = Stockfish(path=stockfishPath)
-stockfish.set_depth(20)  # How deep the AI looks
-stockfish.set_skill_level(20)  # Highest rank stockfish
-stockfish.get_parameters()  # Get all the parameters
 
 board = chess.Board()  # Create a new board
 
@@ -203,7 +205,21 @@ def remove_piece(from_pos, board_height, lift_height):
     print("Piece removed successfully!")
 
 
+stockfish = Stockfish(path=stockfishPath)
+stockfish.set_depth(20)  # How deep the AI looks
+# stockfish.set_skill_level(20)  # Set the difficulty based skill level (mutually exclusive with elo rating)
+# stockfish.set_elo_rating(1500)  # Set the difficulty based on elo rating
+stockfish.get_parameters()  # Get all the parameters of stockfish
+
 display_board()  # Display the board
+
+difficulty = input("Enter the difficulty level (easy, medium, expert, gm): ")
+elo_rating = stockfish_difficulty_level.get(difficulty)
+if elo_rating is None:
+    print("Invalid difficulty level")
+    exit()
+stockfish.set_elo_rating(elo_rating)
+print(Fore.GREEN + "Difficulty level set to", difficulty)
 
 while not board.is_game_over():
     move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
