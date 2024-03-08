@@ -55,3 +55,5 @@ _(Ubuntu 22.04 recommended for compatibility)_:
 [python-chess documentation](https://python-chess.readthedocs.io/en/latest/index.html)
 
 [Stockfish and python-chess tutorial](https://github.com/rogerfitz/tutorials/blob/master/python_chess/0_Chess_Basics.ipynb)
+
+[chess elo levels](https://en.wikipedia.org/wiki/Chess_rating_system)
