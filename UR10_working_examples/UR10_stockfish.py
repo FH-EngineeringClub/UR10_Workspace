@@ -30,13 +30,13 @@ DX = 401.34  # Home TCP position relative to base (in mm)
 DY = -564.75
 
 BOARD_HEIGHT = (
-    0.0228  # height of the board (in meters), measured as TCP Z relative to base
+    0.01792  # height of the board (in meters), measured as TCP Z relative to base
 )
 LIFT_HEIGHT = 0.20  # height of the lift (in meters)
 
-TCP_RX = 1.15  # rx (x rotation of TCP in radians)
-TCP_RY = -2.88  # ry (y rotation of TCP in radians)
-TCP_RZ = 0.004  # rz (z rotation of TCP in radians)
+TCP_RX = 1.9996  # rx (x rotation of TCP in radians)
+TCP_RY = -2.4315  # ry (y rotation of TCP in radians)
+TCP_RZ = 0.0152  # rz (z rotation of TCP in radians)
 
 BIN_POSITION = {"x": 202.8, "y": -354.93}  # position to move to when not in use
 
@@ -182,6 +182,7 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
     move_to_square(from_pos, board_height)
     print("Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
+    input(10)
     print("Lifting piece...")
     lift_piece(from_pos)
     print("Moving piece to", move_to)
