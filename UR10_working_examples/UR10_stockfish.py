@@ -29,7 +29,9 @@ ANGLE = 44.785  # angle between the robot base and the chess board (in degrees)
 DX = 401.34  # Home TCP position relative to base (in mm)
 DY = -564.75
 
-BOARD_HEIGHT = 0.099  # height for the electromagnet to attach to pieces (in meters), measured as TCP Z relative to base
+BOARD_HEIGHT = (
+    0.0228  # height of the board (in meters), measured as TCP Z relative to base
+)
 LIFT_HEIGHT = 0.20  # height of the lift (in meters)
 
 TCP_RX = 1.15  # rx (x rotation of TCP in radians)
@@ -37,6 +39,21 @@ TCP_RY = -2.88  # ry (y rotation of TCP in radians)
 TCP_RZ = 0.004  # rz (z rotation of TCP in radians)
 
 BIN_POSITION = {"x": 300, "y": -200}  # position to move to when not in use
+
+piece_heights = {
+    "k": 0.099,
+    "K": 0.099,
+    "P": 0.0584,
+    "p": 0.0584,
+    "R": 0.0628,
+    "r": 0.0628,
+    "N": 0.0703,
+    "n": 0.0703,
+    "B": 0.0787,
+    "b": 0.0787,
+    "Q": 0.0914,
+    "q": 0.0914,
+}  # dictionary to store the heights of the pieces
 
 osSystem = platform.system()  # Get the OS
 if osSystem == "Darwin" or "Linux":
@@ -228,10 +245,14 @@ while not board.is_game_over():
             print(move_from, move_to)
             from_position = data[move_from]
             to_position = data[move_to]
-            print(
-                board.piece_at(chess.parse_square(move_from))
-            )  # TODO make the board height dynamic based on the piece height
-            direct_move_piece(from_position, to_position, BOARD_HEIGHT, LIFT_HEIGHT)
+            piece_type = board.piece_at(chess.parse_square(move_from))
+            to_position_height = piece_heights[piece_type.symbol()]
+            direct_move_piece(
+                from_position,
+                to_position,
+                to_position_height + BOARD_HEIGHT,
+                LIFT_HEIGHT,
+            )
 
         else:
             print(
@@ -246,8 +267,14 @@ while not board.is_game_over():
             print(move_from, move_to)
             from_position = data[move_from]
             to_position = data[move_to]
-            remove_piece(to_position, BOARD_HEIGHT, LIFT_HEIGHT)
-            direct_move_piece(from_position, to_position, BOARD_HEIGHT, LIFT_HEIGHT)
+            to_position_height = piece_heights[piece_type.symbol()]
+            remove_piece(to_position, to_position_height + BOARD_HEIGHT, LIFT_HEIGHT)
+            direct_move_piece(
+                from_position,
+                to_position,
+                to_position_height + BOARD_HEIGHT,
+                LIFT_HEIGHT,
+            )
 
         print(
             Fore.GREEN + "Stockfish moves:", board.push_san(bestMove[0]["Move"])
