@@ -18,7 +18,7 @@ import chess.polyglot
 from stockfish import Stockfish
 from colorama import Fore
 
-HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 
 rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME)
@@ -38,7 +38,7 @@ TCP_RX = 1.15  # rx (x rotation of TCP in radians)
 TCP_RY = -2.88  # ry (y rotation of TCP in radians)
 TCP_RZ = 0.004  # rz (z rotation of TCP in radians)
 
-BIN_POSITION = {"x": 300, "y": -200}  # position to move to when not in use
+BIN_POSITION = {"x": 202.8, "y": -354.93}  # position to move to when not in use
 
 piece_heights = {
     "k": 0.0762,
@@ -53,7 +53,7 @@ piece_heights = {
     "b": 0.0559,
     "Q": 0.0686,
     "q": 0.0686,
-}  # dictionary to store the heights of the pieces
+}  # dictionary to store the heights of the pieces in meters
 
 stockfish_difficulty_level = {
     "easy": 600,
@@ -122,7 +122,7 @@ def lower_piece(pos):
         [
             robot_position[0] / 1000,  # x
             robot_position[1] / 1000,  # y
-            BOARD_HEIGHT,  # z (height to lift piece)
+            to_position_height + BOARD_HEIGHT,  # z (height to lift piece)
             TCP_RX,  # rx (x rotation of TCP in radians)
             TCP_RY,  # ry (y rotation of TCP in radians)
             TCP_RZ,  # rz (z rotation of TCP in radians)
