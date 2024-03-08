@@ -1,5 +1,5 @@
 """
-import python-chess and stockfish to play chess
+This script is used to control the UR10 robot to play chess against the Stockfish chess engine.
 """
 
 import platform
