@@ -176,7 +176,9 @@ data = json.load(f)
 
 
 def direct_move_piece(from_pos, to_pos, board_height, lift_height):
-    print("Moving piece from", move_from, "to", move_to)
+    print(
+        "Moving piece", board.piece_at(origin_square), "from", move_from, "to", move_to
+    )
     move_to_square(from_pos, board_height)
     print("Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
@@ -192,7 +194,7 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
 
 
 def remove_piece(from_pos, board_height, lift_height):
-    print("Removing piece from", move_from)
+    print("Removing piece", board.piece_at(target_square), "from", move_from)
     move_to_square(from_pos, board_height)
     print("Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
@@ -219,7 +221,7 @@ if elo_rating is None:
     print("Invalid difficulty level")
     exit()
 stockfish.set_elo_rating(elo_rating)
-print(Fore.GREEN + "Difficulty level set to", difficulty)
+print(Fore.GREEN + "Difficulty level set to", difficulty, "with ELO rating", elo_rating)
 
 while not board.is_game_over():
     move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
@@ -251,6 +253,7 @@ while not board.is_game_over():
         stockfish.set_fen_position(board.fen())  # Set the position of the board
         bestMove = stockfish.get_top_moves(1)  # Get the best move
         target_square = chess.Move.from_uci(bestMove[0]["Move"]).to_square
+        origin_square = chess.Move.from_uci(bestMove[0]["Move"]).from_square
 
         if board.piece_at(target_square) is None:
             print(Fore.CYAN + "Space not occupied")
