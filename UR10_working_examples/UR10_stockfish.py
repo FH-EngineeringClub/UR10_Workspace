@@ -190,7 +190,7 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
     print("Piece moved successfully!")
 
 
-# TODO go to lift height before ex
+# TODO go to lift height before removing piece
 
 
 def remove_piece(from_pos, board_height, lift_height):
