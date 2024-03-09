@@ -40,19 +40,12 @@ TCP_RZ = 0.0152  # rz (z rotation of TCP in radians)
 
 BIN_POSITION = {"x": 202.8, "y": -354.93}  # position to move to when not in use
 
-# TODO fix bishop / queen / pawn height
 piece_heights = {
     "k": 0.08049,
-    "K": 0.08049,
-    "P": 0.03545,
     "p": 0.03545,
-    "R": 0.04191,
-    "r": 0.04191,
-    "N": 0.04569,
+    "r": 0.04604,
     "n": 0.04569,
-    "B": 0.05614,
     "b": 0.05614,
-    "Q": 0.07048,
     "q": 0.07048,
 }  # dictionary to store the heights of the pieces in meters
 
@@ -197,6 +190,9 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
     print("Piece moved successfully!")
 
 
+# TODO go to lift height before ex
+
+
 def remove_piece(from_pos, board_height, lift_height):
     print("Removing piece", board.piece_at(target_square), "from", move_from)
     move_to_square(from_pos, lift_height)
@@ -204,6 +200,7 @@ def remove_piece(from_pos, board_height, lift_height):
     print("Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
     print("Lifting piece...")
+    move_to_square(from_pos, lift_height)
     lift_piece(from_pos)
     print("Moving piece to ex")
     move_to_square(BIN_POSITION, lift_height)  # move to the side position
