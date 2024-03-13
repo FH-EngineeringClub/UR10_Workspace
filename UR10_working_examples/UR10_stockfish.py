@@ -40,9 +40,12 @@ TCP_RZ = 0.0152  # rz (z rotation of TCP in radians)
 
 BIN_POSITION = {"x": 202.8, "y": -354.93}  # position to move to when not in use
 
+# NORM_MOVE_SPEED = 0.5  # speed of the tool [m/s]
+# NORM_MOVE_ACCEL = 0.3  # acceleration of the tool [m/s^2]
+
 piece_heights = {
     "k": 0.08049,
-    "p": 0.03545,
+    "p": 0.03345,
     "r": 0.04604,
     "n": 0.04569,
     "b": 0.05614,
@@ -142,11 +145,16 @@ def send_command_to_robot(command):
 
     # Close the connection
     sock.close()
-    sleep(0.5)  # Allow the piece to attach to the electromagnet
+    sleep(0.2)  # Allow the piece to attach to the electromagnet
 
 
 OUTPUT_24 = "sec myProg():\n\
     set_tool_voltage(24)\n\
+end\n\
+myProg()\n"
+
+OUTPUT_12 = "sec myProg():\n\
+    set_tool_voltage(12)\n\
 end\n\
 myProg()\n"
 
@@ -186,7 +194,10 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
     print("Lowering piece...")
     lower_piece(to_pos)
     print("De-energizing electromagnet...")
+    send_command_to_robot(OUTPUT_12)  # de-energize the electromagnet
+    sleep(2)
     send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
+    sleep(2)
     print("Piece moved successfully!")
 
 
@@ -198,7 +209,7 @@ def remove_piece(from_pos, board_height, lift_height):
     move_to_square(from_pos, lift_height)
     move_to_square(from_pos, board_height)
     print("Energizing electromagnet...")
-    send_command_to_robot(OUTPUT_24)  # energize the electromagnet
+    send_command_to_robot(OUTPUT_12)  # energize the electromagnet
     print("Lifting piece...")
     move_to_square(from_pos, lift_height)
     lift_piece(from_pos)
@@ -206,6 +217,8 @@ def remove_piece(from_pos, board_height, lift_height):
     move_to_square(BIN_POSITION, lift_height)  # move to the side position
     print("De-energizing electromagnet...")
     send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
+    move_to_square(BIN_POSITION, lift_height)
+    move_to_square(BIN_POSITION, lift_height)
     print("Piece removed successfully!")
 
 
