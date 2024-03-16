@@ -17,12 +17,14 @@ ANGLE = 44.785  # angle between the robot base and the chess board (in degrees)
 DX = 401.34  # Home TCP position relative to base (in mm)
 DY = -564.75
 
-BOARD_HEIGHT = 0.099  # height for the electromagnet to attach to pieces (in meters), measured as TCP Z relative to base
-LIFT_HEIGHT = 0.20  # height of the lift (in meters)
+BOARD_HEIGHT = (
+    0.09375  # height of the board (in meters), measured as TCP Z relative to base
+)
+LIFT_HEIGHT = BOARD_HEIGHT + 0.254  # height of the lift (in meters)
 
-TCP_RX = 1.15  # rx (x rotation of TCP in radians)
-TCP_RY = -2.88  # ry (y rotation of TCP in radians)
-TCP_RZ = 0.004  # rz (z rotation of TCP in radians)
+TCP_RX = 2.2226  # rx (x rotation of TCP in radians)
+TCP_RY = -2.2413  # ry (y rotation of TCP in radians)
+TCP_RZ = 0.0489  # rz (z rotation of TCP in radians)
 
 
 def translate(x, y):

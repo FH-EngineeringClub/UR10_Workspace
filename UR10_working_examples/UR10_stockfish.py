@@ -30,13 +30,13 @@ DX = 401.34  # Home TCP position relative to base (in mm)
 DY = -564.75
 
 BOARD_HEIGHT = (
-    0.01592  # height of the board (in meters), measured as TCP Z relative to base
+    0.09375  # height of the board (in meters), measured as TCP Z relative to base
 )
-LIFT_HEIGHT = 0.20  # height of the lift (in meters)
+LIFT_HEIGHT = BOARD_HEIGHT + 0.254  # height of the lift (in meters)
 
-TCP_RX = 1.9996  # rx (x rotation of TCP in radians)
-TCP_RY = -2.4315  # ry (y rotation of TCP in radians)
-TCP_RZ = 0.0152  # rz (z rotation of TCP in radians)
+TCP_RX = 2.2226  # rx (x rotation of TCP in radians)
+TCP_RY = -2.2413  # ry (y rotation of TCP in radians)
+TCP_RZ = 0.0489  # rz (z rotation of TCP in radians)
 
 BIN_POSITION = {"x": 202.8, "y": -354.93}  # position to move to when not in use
 
@@ -45,11 +45,17 @@ BIN_POSITION = {"x": 202.8, "y": -354.93}  # position to move to when not in use
 
 piece_heights = {
     "k": 0.08049,
-    "p": 0.03345,
-    "r": 0.04604,
+    "K": 0.08049,
+    "p": 0.03345 + 0.002,  # add 2mm to the height of the pawn
+    "P": 0.03345 + 0.002,  # add 2mm to the height of the pawn
+    "r": 0.04604 + 0.003,  # add 3mm to the height of the rook
+    "R": 0.04604 + 0.003,  # add 3mm to the height of the rook
     "n": 0.04569,
-    "b": 0.05614,
+    "N": 0.04569,
+    "b": 0.05902,
+    "B": 0.05902,
     "q": 0.07048,
+    "Q": 0.07048,
 }  # dictionary to store the heights of the pieces in meters
 
 stockfish_difficulty_level = {
@@ -99,6 +105,7 @@ def move_to_square(pos, height):
 
 def lift_piece(pos):
     robot_position = translate(pos["x"], pos["y"])
+    sleep(0.5)
     control_interface.moveL(
         [
             robot_position[0] / 1000,  # x
@@ -116,11 +123,42 @@ def lift_piece(pos):
 
 def lower_piece(pos):
     robot_position = translate(pos["x"], pos["y"])
+    if REMOVING_PIECE == 1:
+        control_interface.moveL(
+            [
+                robot_position[0] / 1000,  # x
+                robot_position[1] / 1000,  # y
+                from_position_height + BOARD_HEIGHT,  # z (height to lift piece)
+                TCP_RX,  # rx (x rotation of TCP in radians)
+                TCP_RY,  # ry (y rotation of TCP in radians)
+                TCP_RZ,  # rz (z rotation of TCP in radians)
+            ],
+            0.5,  # speed: speed of the tool [m/s]
+            0.3,  # acceleration: acceleration of the tool [m/s^2]
+        )
+    else:
+        control_interface.moveL(
+            [
+                robot_position[0] / 1000,  # x
+                robot_position[1] / 1000,  # y
+                to_position_height + BOARD_HEIGHT,  # z (height to lift piece)
+                TCP_RX,  # rx (x rotation of TCP in radians)
+                TCP_RY,  # ry (y rotation of TCP in radians)
+                TCP_RZ,  # rz (z rotation of TCP in radians)
+            ],
+            0.5,  # speed: speed of the tool [m/s]
+            0.3,  # acceleration: acceleration of the tool [m/s^2]
+        )
+    sleep(0.5)
+
+
+def lower_remove_piece(pos):
+    robot_position = translate(pos["x"], pos["y"])
     control_interface.moveL(
         [
             robot_position[0] / 1000,  # x
             robot_position[1] / 1000,  # y
-            to_position_height + BOARD_HEIGHT,  # z (height to lift piece)
+            from_position_height + BOARD_HEIGHT,  # z (height to lift piece)
             TCP_RX,  # rx (x rotation of TCP in radians)
             TCP_RY,  # ry (y rotation of TCP in radians)
             TCP_RZ,  # rz (z rotation of TCP in radians)
@@ -145,7 +183,7 @@ def send_command_to_robot(command):
 
     # Close the connection
     sock.close()
-    sleep(0.2)  # Allow the piece to attach to the electromagnet
+    sleep(0.5)  # Allow the piece to attach to the electromagnet
 
 
 OUTPUT_24 = "sec myProg():\n\
@@ -194,10 +232,8 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
     print("Lowering piece...")
     lower_piece(to_pos)
     print("De-energizing electromagnet...")
-    send_command_to_robot(OUTPUT_12)  # de-energize the electromagnet
-    sleep(2)
     send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
-    sleep(2)
+    sleep(1)
     print("Piece moved successfully!")
 
 
@@ -272,6 +308,7 @@ while not board.is_game_over():
 
         if board.piece_at(target_square) is None:
             print(Fore.CYAN + "Space not occupied")
+            REMOVING_PIECE = 0
 
             move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
             move_from = move[:2]  # from square
@@ -279,8 +316,9 @@ while not board.is_game_over():
             print(move_from, move_to)
             from_position = data[move_from]
             to_position = data[move_to]
-            piece_type = board.piece_at(chess.parse_square(move_from))
-            to_position_height = piece_heights[piece_type.symbol()]
+            from_piece_type = board.piece_at(chess.parse_square(move_from))
+            to_piece_type = board.piece_at(chess.parse_square(move_to))
+            to_position_height = piece_heights[from_piece_type.symbol()]
             direct_move_piece(
                 from_position,
                 to_position,
@@ -294,6 +332,7 @@ while not board.is_game_over():
                 board.piece_at(target_square),
                 "removing piece...",
             )
+            REMOVING_PIECE = 1
 
             move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
             move_from = move[:2]  # from square
@@ -301,12 +340,15 @@ while not board.is_game_over():
             print(move_from, move_to)
             from_position = data[move_from]
             to_position = data[move_to]
-            to_position_height = piece_heights[piece_type.symbol()]
+            from_piece_type = board.piece_at(chess.parse_square(move_from))
+            to_piece_type = board.piece_at(chess.parse_square(move_to))
+            to_position_height = piece_heights[to_piece_type.symbol()]
+            from_position_height = piece_heights[from_piece_type.symbol()]
             remove_piece(to_position, to_position_height + BOARD_HEIGHT, LIFT_HEIGHT)
             direct_move_piece(
                 from_position,
                 to_position,
-                to_position_height + BOARD_HEIGHT,
+                from_position_height + BOARD_HEIGHT,
                 LIFT_HEIGHT,
             )
 
