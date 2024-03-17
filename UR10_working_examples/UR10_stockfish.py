@@ -48,8 +48,8 @@ piece_heights = {
     "K": 0.08049,
     "p": 0.03345 + 0.002,  # add 2mm to the height of the pawn
     "P": 0.03345 + 0.002,  # add 2mm to the height of the pawn
-    "r": 0.04604 + 0.003,  # add 3mm to the height of the rook
-    "R": 0.04604 + 0.003,  # add 3mm to the height of the rook
+    "r": 0.04604,
+    "R": 0.04604,
     "n": 0.04569,
     "N": 0.04569,
     "b": 0.05902,
