@@ -21,9 +21,15 @@ from colorama import Fore
 HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 
-rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME)
-rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME)
-control_interface = rtde_control.RTDEControlInterface(HOSTNAME)
+
+RTDE_FREQUENCY = 30.0  # Hz to update from robot
+rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME, RTDE_FREQUENCY, verbose=True)
+rtde_receive_ = rtde_receive.RTDEReceiveInterface(
+    HOSTNAME, RTDE_FREQUENCY, verbose=True
+)
+control_interface = rtde_control.RTDEControlInterface(
+    HOSTNAME, RTDE_FREQUENCY, verbose=True
+)
 
 ANGLE = 44.785  # angle between the robot base and the chess board (in degrees)
 DX = 401.34  # Home TCP position relative to base (in mm)
