@@ -6,25 +6,32 @@ import rtde_io
 import rtde_receive
 import rtde_control
 
-HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
+RTDE_FREQUENCY = 10.0  # Hz to update from robot
 
-rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME)
-rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME)
-control_interface = rtde_control.RTDEControlInterface(HOSTNAME)
+rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME, RTDE_FREQUENCY)
+rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME, RTDE_FREQUENCY)
+control_interface = rtde_control.RTDEControlInterface(HOSTNAME, RTDE_FREQUENCY)
 
 ANGLE = 44.785  # angle between the robot base and the chess board (in degrees)
 DX = 401.34  # Home TCP position relative to base (in mm)
 DY = -564.75
 
 BOARD_HEIGHT = (
-    0.09375  # height of the board (in meters), measured as TCP Z relative to base
+    0.09375
+    + 0.03  # height of the board (in meters), measured as TCP Z relative to base
 )
 LIFT_HEIGHT = BOARD_HEIGHT + 0.254  # height of the lift (in meters)
 
 TCP_RX = 2.2226  # rx (x rotation of TCP in radians)
 TCP_RY = -2.2413  # ry (y rotation of TCP in radians)
 TCP_RZ = 0.0489  # rz (z rotation of TCP in radians)
+
+BIN_POSITION = {"x": 202.8, "y": -354.93}  # position to move to when not in use
+
+MOVE_SPEED = 0.5  # speed of the tool [m/s]
+MOVE_ACCEL = 0.3  # acceleration of the tool [m/s^2]
 
 
 def translate(x, y):

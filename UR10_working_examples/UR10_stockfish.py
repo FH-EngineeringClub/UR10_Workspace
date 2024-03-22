@@ -31,7 +31,8 @@ DX = 401.34  # Home TCP position relative to base (in mm)
 DY = -564.75
 
 BOARD_HEIGHT = (
-    0.09375  # height of the board (in meters), measured as TCP Z relative to base
+    0.09375
+    + 0.03  # height of the board (in meters), measured as TCP Z relative to base
 )
 LIFT_HEIGHT = BOARD_HEIGHT + 0.254  # height of the lift (in meters)
 
