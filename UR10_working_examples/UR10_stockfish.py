@@ -18,18 +18,13 @@ import chess.polyglot
 from stockfish import Stockfish
 from colorama import Fore
 
-HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
+RTDE_FREQUENCY = 10.0  # Hz to update from robot
 
-
-RTDE_FREQUENCY = 30.0  # Hz to update from robot
-rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME, RTDE_FREQUENCY, verbose=True)
-rtde_receive_ = rtde_receive.RTDEReceiveInterface(
-    HOSTNAME, RTDE_FREQUENCY, verbose=True
-)
-control_interface = rtde_control.RTDEControlInterface(
-    HOSTNAME, RTDE_FREQUENCY, verbose=True
-)
+rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME, RTDE_FREQUENCY)
+rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME, RTDE_FREQUENCY)
+control_interface = rtde_control.RTDEControlInterface(HOSTNAME, RTDE_FREQUENCY)
 
 ANGLE = 44.785  # angle between the robot base and the chess board (in degrees)
 DX = 401.34  # Home TCP position relative to base (in mm)
@@ -240,10 +235,8 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
     print("De-energizing electromagnet...")
     send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
     sleep(1)
+    move_to_square(to_pos, lift_height)
     print("Piece moved successfully!")
-
-
-# TODO go to lift height before removing piece
 
 
 def remove_piece(from_pos, board_height, lift_height):
@@ -301,6 +294,12 @@ while not board.is_game_over():
     valid_move = (
         chess.Move.from_uci(inputmove) in board.legal_moves
     )  # Check if the move is valid
+
+    # try:
+    #     board.parse_san(inputmove)
+    # except chess.InvalidMoveError:
+    #     print(Fore.RED + "Invalid move. Please try again.")
+    #     continue
 
     if valid_move is True:
         board.push_san(inputmove)  # Push the move to the board
@@ -363,9 +362,9 @@ while not board.is_game_over():
         )  # Push the best move to the board
 
         display_board()  # Update the board svg
-
     else:
         print(Fore.RED + "Not a legal move, Please try again")
+
 
 move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
 print(Fore.CYAN + "Moving to bin position...")
