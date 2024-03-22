@@ -41,8 +41,8 @@ TCP_RZ = 0.0489  # rz (z rotation of TCP in radians)
 
 BIN_POSITION = {"x": 202.8, "y": -354.93}  # position to move to when not in use
 
-# NORM_MOVE_SPEED = 0.5  # speed of the tool [m/s]
-# NORM_MOVE_ACCEL = 0.3  # acceleration of the tool [m/s^2]
+MOVE_SPEED = 0.5  # speed of the tool [m/s]
+MOVE_ACCEL = 0.3  # acceleration of the tool [m/s^2]
 
 piece_heights = {
     "k": 0.08049,
@@ -99,8 +99,8 @@ def move_to_square(pos, height):
             TCP_RY,  # ry (y rotation of TCP in radians)
             TCP_RZ,  # rz (z rotation of TCP in radians)
         ],
-        0.5,  # speed: speed of the tool [m/s]
-        0.3,  # acceleration: acceleration of the tool [m/s^2]
+        MOVE_SPEED,  # speed: speed of the tool [m/s]
+        MOVE_ACCEL,  # acceleration: acceleration of the tool [m/s^2]
     )
 
 
@@ -116,8 +116,8 @@ def lift_piece(pos):
             TCP_RY,  # ry (y rotation of TCP in radians)
             TCP_RZ,  # rz (z rotation of TCP in radians)
         ],
-        0.5,  # speed: speed of the tool [m/s]
-        0.3,  # acceleration: acceleration of the tool [m/s^2]
+        MOVE_SPEED,  # speed: speed of the tool [m/s]
+        MOVE_ACCEL,  # acceleration: acceleration of the tool [m/s^2]
     )
     sleep(0.5)
 
@@ -134,8 +134,8 @@ def lower_piece(pos):
                 TCP_RY,  # ry (y rotation of TCP in radians)
                 TCP_RZ,  # rz (z rotation of TCP in radians)
             ],
-            0.5,  # speed: speed of the tool [m/s]
-            0.3,  # acceleration: acceleration of the tool [m/s^2]
+            MOVE_SPEED,  # speed: speed of the tool [m/s]
+            MOVE_ACCEL,  # acceleration: acceleration of the tool [m/s^2]
         )
     else:
         control_interface.moveL(
@@ -147,8 +147,8 @@ def lower_piece(pos):
                 TCP_RY,  # ry (y rotation of TCP in radians)
                 TCP_RZ,  # rz (z rotation of TCP in radians)
             ],
-            0.5,  # speed: speed of the tool [m/s]
-            0.3,  # acceleration: acceleration of the tool [m/s^2]
+            MOVE_SPEED,  # speed: speed of the tool [m/s]
+            MOVE_ACCEL,  # acceleration: acceleration of the tool [m/s^2]
         )
     sleep(0.5)
 
@@ -164,8 +164,8 @@ def lower_remove_piece(pos):
             TCP_RY,  # ry (y rotation of TCP in radians)
             TCP_RZ,  # rz (z rotation of TCP in radians)
         ],
-        0.5,  # speed: speed of the tool [m/s]
-        0.3,  # acceleration: acceleration of the tool [m/s^2]
+        MOVE_SPEED,  # speed: speed of the tool [m/s]
+        MOVE_ACCEL,  # acceleration: acceleration of the tool [m/s^2]
     )
     sleep(0.5)
 
@@ -285,7 +285,11 @@ while not board.is_game_over():
     user_confirmation = input(
         Fore.YELLOW + "Are you sure you want to make this move? (Y/n)"
     )
-    if user_confirmation == "y" or "":
+    if (
+        user_confirmation != "y"
+        and user_confirmation != "Y"
+        and user_confirmation != ""
+    ):
         print(
             Fore.RED + "Move not confirmed, please try again"
         )  # If the user doesn't confirm the move, ask for a new move
