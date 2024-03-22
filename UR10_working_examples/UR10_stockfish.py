@@ -283,23 +283,23 @@ while not board.is_game_over():
     )  # Get the move from the user
 
     user_confirmation = input(
-        Fore.YELLOW + "Are you sure you want to make this move? (y/n)"
+        Fore.YELLOW + "Are you sure you want to make this move? (Y/n)"
     )
-    if user_confirmation != "y":
+    if user_confirmation == "y" or "":
         print(
             Fore.RED + "Move not confirmed, please try again"
         )  # If the user doesn't confirm the move, ask for a new move
         continue  # Skip the rest of the loop and start from the beginning
 
+    try:
+        board.parse_san(inputmove)
+    except ValueError:
+        print(Fore.RED + "Move is not in SAN format. Please try again.")
+        continue
+
     valid_move = (
         chess.Move.from_uci(inputmove) in board.legal_moves
     )  # Check if the move is valid
-
-    # try:
-    #     board.parse_san(inputmove)
-    # except chess.InvalidMoveError:
-    #     print(Fore.RED + "Invalid move. Please try again.")
-    #     continue
 
     if valid_move is True:
         board.push_san(inputmove)  # Push the move to the board
