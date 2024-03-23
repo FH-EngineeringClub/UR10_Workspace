@@ -278,7 +278,9 @@ while not board.is_game_over():
     move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
     print(Fore.CYAN + "Moving to bin position...")
 
-    print(Fore.WHITE + "Legal moves:", [move.uci() for move in board.legal_moves])
+    print(
+        Fore.WHITE + "Legal moves:", [move.uci() for move in board.pseudo_legal_moves]
+    )
     inputmove = input(
         Fore.BLUE + "Input move from the following legal moves (SAN format):"
     )  # Get the move from the user
@@ -303,7 +305,7 @@ while not board.is_game_over():
         continue
 
     valid_move = (
-        chess.Move.from_uci(inputmove) in board.legal_moves
+        chess.Move.from_uci(inputmove) in board.pseudo_legal_moves
     )  # Check if the move is valid
 
     if valid_move is True:
