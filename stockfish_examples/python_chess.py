@@ -57,9 +57,22 @@ def display_board():
 display_board()  # Display the board
 
 while not board.is_game_over():
-    print(Fore.WHITE + "Legal moves:", [move.uci() for move in board.legal_moves])
+    print(Fore.WHITE + "Legal moves:")
+
+    for move in (
+        board.pseudo_legal_moves
+    ):  # Print all the legal moves, including castling, en passant, and captures
+        if board.is_castling(move):
+            print(Fore.LIGHTRED_EX + "Castling " + move.uci(), end=" ")
+        elif board.is_en_passant(move):
+            print(Fore.LIGHTRED_EX + "En Passant " + move.uci(), end=" ")
+        elif board.is_capture(move):
+            print(Fore.LIGHTCYAN_EX + "Capture " + move.uci(), end=" ")
+        else:
+            print(Fore.WHITE + move.uci(), end=" ")
+
     inputmove = input(
-        Fore.BLUE + "Input move from the following legal moves (SAN format):"
+        "\n" + Fore.BLUE + "Input move from the following legal moves (SAN format):"
     )  # Get the move from the user
 
     user_confirmation = input(

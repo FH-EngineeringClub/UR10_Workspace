@@ -225,37 +225,37 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
     )
     move_to_square(from_pos, lift_height)
     move_to_square(from_pos, board_height)
-    print("Energizing electromagnet...")
+    print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
-    print("Lifting piece...")
+    print(Fore.CYAN + "Lifting piece...")
     lift_piece(from_pos)
     print("Moving piece to", move_to)
     move_to_square(to_pos, lift_height)
     print("Lowering piece...")
     lower_piece(to_pos)
-    print("De-energizing electromagnet...")
+    print(Fore.LIGHTBLUE_EX + "De-energizing electromagnet...")
     send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
     sleep(1)
     move_to_square(to_pos, lift_height)
-    print("Piece moved successfully!")
+    print(Fore.CYAN + "Piece moved successfully!")
 
 
 def remove_piece(from_pos, board_height, lift_height):
     print("Removing piece", board.piece_at(target_square), "from", move_from)
     move_to_square(from_pos, lift_height)
     move_to_square(from_pos, board_height)
-    print("Energizing electromagnet...")
+    print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
     send_command_to_robot(OUTPUT_12)  # energize the electromagnet
-    print("Lifting piece...")
+    print(Fore.CYAN + "Lifting piece...")
     move_to_square(from_pos, lift_height)
     lift_piece(from_pos)
     print("Moving piece to ex")
     move_to_square(BIN_POSITION, lift_height)  # move to the side position
-    print("De-energizing electromagnet...")
+    print(Fore.LIGHTBLUE_EX + "De-energizing electromagnet...")
     send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
     move_to_square(BIN_POSITION, lift_height)
     move_to_square(BIN_POSITION, lift_height)
-    print("Piece removed successfully!")
+    print(Fore.CYAN + "Piece removed successfully!")
 
 
 stockfish = Stockfish(path=stockfishPath)
@@ -278,11 +278,22 @@ while not board.is_game_over():
     move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
     print(Fore.CYAN + "Moving to bin position...")
 
-    print(
-        Fore.WHITE + "Legal moves:", [move.uci() for move in board.pseudo_legal_moves]
-    )
+    print(Fore.WHITE + "Legal moves:")
+
+    for move in (
+        board.pseudo_legal_moves
+    ):  # Print all the legal moves, including castling, en passant, and captures
+        if board.is_castling(move):
+            print(Fore.LIGHTRED_EX + "Castling " + move.uci(), end=" ")
+        elif board.is_en_passant(move):
+            print(Fore.LIGHTRED_EX + "En Passant " + move.uci(), end=" ")
+        elif board.is_capture(move):
+            print(Fore.LIGHTCYAN_EX + "Capture " + move.uci(), end=" ")
+        else:
+            print(Fore.WHITE + move.uci(), end=" ")
+
     inputmove = input(
-        Fore.BLUE + "Input move from the following legal moves (SAN format):"
+        "\n" + Fore.BLUE + "Input move from the following legal moves (SAN format):"
     )  # Get the move from the user
 
     user_confirmation = input(
