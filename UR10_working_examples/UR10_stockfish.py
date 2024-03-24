@@ -20,7 +20,7 @@ from colorama import Fore
 
 HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
-RTDE_FREQUENCY = 10  # Hz to update from robot
+RTDE_FREQUENCY = 10  # Hz to update data from robot
 
 rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME, RTDE_FREQUENCY)
 rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME, RTDE_FREQUENCY)
@@ -123,6 +123,9 @@ def translate(x, y):
 
 
 def move_to_square(pos, height):
+    """
+    Move the TCP to a given position on the chess board
+    """
     robot_position = translate(pos["x"], pos["y"])
     control_interface.moveL(
         [
@@ -139,11 +142,11 @@ def move_to_square(pos, height):
 
 
 def forcemode_lower():
+    """
+    Lower the TCP to make contact with the piece
+    """
     tcp_cycles = 0
     while TCP_CONTACT == 0 and tcp_cycles < 200:
-        # for _ in range(
-        #     RTDE_FREQUENCY * FORCE_SECONDS
-        # ):  # number of cycles to make (hz * duration in seconds)
         t_start = control_interface.initPeriod()
         # Move the robot down for 2 seconds
         tcp_cycles += 1
@@ -159,6 +162,9 @@ def forcemode_lower():
 
 
 def lift_piece(pos):
+    """
+    Lift the piece from the board
+    """
     robot_position = translate(pos["x"], pos["y"])
     sleep(0.5)
     control_interface.moveL(
@@ -177,6 +183,9 @@ def lift_piece(pos):
 
 
 def lower_piece(pos):
+    """
+    Lower the piece to the board
+    """
     robot_position = translate(pos["x"], pos["y"])
     if REMOVING_PIECE == 1:
         control_interface.moveL(
@@ -207,24 +216,10 @@ def lower_piece(pos):
     sleep(0.5)
 
 
-def lower_remove_piece(pos):
-    robot_position = translate(pos["x"], pos["y"])
-    control_interface.moveL(
-        [
-            robot_position[0] / 1000,  # x
-            robot_position[1] / 1000,  # y
-            from_position_height + BOARD_HEIGHT,  # z (height to lift piece)
-            TCP_RX,  # rx (x rotation of TCP in radians)
-            TCP_RY,  # ry (y rotation of TCP in radians)
-            TCP_RZ,  # rz (z rotation of TCP in radians)
-        ],
-        MOVE_SPEED,  # speed: speed of the tool [m/s]
-        MOVE_ACCEL,  # acceleration: acceleration of the tool [m/s^2]
-    )
-    sleep(0.5)
-
-
 def send_command_to_robot(command):
+    """
+    Send a command to the robot directly using a socket connection
+    """
     # Connect to the robot
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((HOSTNAME, HOST_PORT))
@@ -273,6 +268,9 @@ data = json.load(f)
 
 
 def direct_move_piece(from_pos, to_pos, board_height, lift_height):
+    """
+    Directly move a piece from one position to another on the chess board
+    """
     print(
         "Moving piece", board.piece_at(origin_square), "from", move_from, "to", move_to
     )
@@ -296,6 +294,9 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
 
 
 def remove_piece(from_pos, board_height, lift_height):
+    """
+    Remove a piece from the chess board
+    """
     print("Removing piece", board.piece_at(target_square), "from", move_from)
     move_to_square(from_pos, lift_height)
     move_to_square(from_pos, board_height)
@@ -317,7 +318,7 @@ def remove_piece(from_pos, board_height, lift_height):
 
 stockfish = Stockfish(path=stockfishPath)
 stockfish.set_depth(20)  # How deep the AI looks
-# stockfish.set_skill_level(20)  # Set the difficulty based skill level (mutually exclusive with elo rating)
+# stockfish.set_skill_level(20)  # Set the difficulty based skill level
 # stockfish.set_elo_rating(1500)  # Set the difficulty based on elo rating
 stockfish.get_parameters()  # Get all the parameters of stockfish
 
