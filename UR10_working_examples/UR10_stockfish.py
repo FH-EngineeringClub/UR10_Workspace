@@ -74,6 +74,10 @@ tcp_down = [
 FORCE_TYPE = 2  # The type of force to apply
 limits = [2, 2, 1.5, 1, 1, 1]  # The tcp speed limits [x, y, z, rx, ry, rz]
 
+TCP_CONTACT = control_interface.toolContact(
+    [0, 0, 1, 0, 0, 0]
+)  # Check if the TCP is in contact with the piece
+
 piece_heights = {
     "k": 0.08049,
     "K": 0.08049,
@@ -135,16 +139,22 @@ def move_to_square(pos, height):
 
 
 def forcemode_lower():
-    for _ in range(
-        RTDE_FREQUENCY * FORCE_SECONDS
-    ):  # number of cycles to make (hz * duration in seconds)
+    tcp_cycles = 0
+    while TCP_CONTACT == 0 and tcp_cycles < 200:
+        # for _ in range(
+        #     RTDE_FREQUENCY * FORCE_SECONDS
+        # ):  # number of cycles to make (hz * duration in seconds)
         t_start = control_interface.initPeriod()
         # Move the robot down for 2 seconds
+        tcp_cycles += 1
+        print(tcp_cycles)
+        print(TCP_CONTACT)
         control_interface.forceMode(
             task_frame, selection_vector, tcp_down, FORCE_TYPE, limits
         )
         control_interface.waitPeriod(t_start)
-
+    if tcp_cycles == 200:
+        print(Fore.RED + "TCP was not able to find the piece")
     control_interface.forceModeStop()
 
 
