@@ -20,7 +20,7 @@ from colorama import Fore
 
 HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
-RTDE_FREQUENCY = 10.0  # Hz to update from robot
+RTDE_FREQUENCY = 10  # Hz to update from robot
 
 rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME, RTDE_FREQUENCY)
 rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME, RTDE_FREQUENCY)
@@ -44,6 +44,35 @@ BIN_POSITION = {"x": 202.8, "y": -354.93}  # position to move to when not in use
 
 MOVE_SPEED = 0.5  # speed of the tool [m/s]
 MOVE_ACCEL = 0.3  # acceleration of the tool [m/s^2]
+
+FORCE_SECONDS = 2  # duration of the force mode in seconds
+
+task_frame = [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+]  # A pose vector that defines the force frame relative to the base frame.
+selection_vector = [
+    0,
+    0,
+    1,
+    0,
+    0,
+    0,
+]  # A 6d vector that defines which degrees of freedom are controlled by the force/torque sensor.
+tcp_down = [
+    0,
+    0,
+    -0.1,  # -0.1 newton force in negative z direction (onto the piece)
+    0,
+    0,
+    0,
+]  # The force vector [x, y, z, rx, ry, rz] in the force frame.
+FORCE_TYPE = 2  # The type of force to apply
+limits = [2, 2, 1.5, 1, 1, 1]  # The tcp speed limits [x, y, z, rx, ry, rz]
 
 piece_heights = {
     "k": 0.08049,
@@ -103,6 +132,20 @@ def move_to_square(pos, height):
         MOVE_SPEED,  # speed: speed of the tool [m/s]
         MOVE_ACCEL,  # acceleration: acceleration of the tool [m/s^2]
     )
+
+
+def forcemode_lower():
+    for _ in range(
+        RTDE_FREQUENCY * FORCE_SECONDS
+    ):  # number of cycles to make (hz * duration in seconds)
+        t_start = control_interface.initPeriod()
+        # Move the robot down for 2 seconds
+        control_interface.forceMode(
+            task_frame, selection_vector, tcp_down, FORCE_TYPE, limits
+        )
+        control_interface.waitPeriod(t_start)
+
+    control_interface.forceModeStop()
 
 
 def lift_piece(pos):
@@ -225,6 +268,8 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
     )
     move_to_square(from_pos, lift_height)
     move_to_square(from_pos, board_height)
+    print(Fore.CYAN + "Lowering TCP...")
+    forcemode_lower()
     print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
     print(Fore.CYAN + "Lifting piece...")
@@ -244,6 +289,8 @@ def remove_piece(from_pos, board_height, lift_height):
     print("Removing piece", board.piece_at(target_square), "from", move_from)
     move_to_square(from_pos, lift_height)
     move_to_square(from_pos, board_height)
+    print(Fore.CYAN + "Lowering TCP...")
+    forcemode_lower()
     print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
     send_command_to_robot(OUTPUT_12)  # energize the electromagnet
     print(Fore.CYAN + "Lifting piece...")
