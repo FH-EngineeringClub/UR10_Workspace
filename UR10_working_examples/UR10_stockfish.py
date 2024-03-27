@@ -18,7 +18,7 @@ import chess.polyglot
 from stockfish import Stockfish
 from colorama import Fore
 
-HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 RTDE_FREQUENCY = 10  # Hz to update data from robot
 
@@ -27,18 +27,18 @@ rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME, RTDE_FREQUENCY)
 control_interface = rtde_control.RTDEControlInterface(HOSTNAME, RTDE_FREQUENCY)
 
 ANGLE = 44.785  # angle between the robot base and the chess board (in degrees)
-DX = 401.34  # Home TCP position relative to base (in mm)
-DY = -564.75
+DX = 403.90  # Home TCP position relative to base (in mm)
+DY = -571.83
 
 BOARD_HEIGHT = (
-    0.09375
-    + 0.03  # height of the board (in meters), measured as TCP Z relative to base
+    0.1229
+    + 0.0025  # height of the board (in meters), measured as TCP Z relative to base
 )
 LIFT_HEIGHT = BOARD_HEIGHT + 0.254  # height of the lift (in meters)
 
-TCP_RX = 2.2226  # rx (x rotation of TCP in radians)
-TCP_RY = -2.2413  # ry (y rotation of TCP in radians)
-TCP_RZ = 0.0489  # rz (z rotation of TCP in radians)
+TCP_RX = 2.7821  # rx (x rotation of TCP in radians)
+TCP_RY = -1.465  # ry (y rotation of TCP in radians)
+TCP_RZ = -0.0416  # rz (z rotation of TCP in radians)
 
 BIN_POSITION = {"x": 202.8, "y": -354.93}  # position to move to when not in use
 
@@ -80,18 +80,20 @@ TCP_CONTACT = control_interface.toolContact(
 
 piece_heights = {
     "k": 0.08049,
-    "K": 0.08049,
+    "K": 0.08049 - 0.002,
     "p": 0.03345 + 0.002,  # add 2mm to the height of the pawn
     "P": 0.03345 + 0.002,  # add 2mm to the height of the pawn
     "r": 0.04604 - 0.002,
     "R": 0.04604 - 0.002,
     "n": 0.04569,
     "N": 0.04569,
-    "b": 0.05902,
-    "B": 0.05902,
+    "b": 0.05902 - 0.002,
+    "B": 0.05902 - 0.002,
     "q": 0.07048,
     "Q": 0.07048,
 }  # dictionary to store the heights of the pieces in meters
+
+# TODO fix castle move
 
 stockfish_difficulty_level = {
     "easy": 600,
