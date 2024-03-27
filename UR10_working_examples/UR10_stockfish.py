@@ -93,8 +93,6 @@ piece_heights = {
     "Q": 0.07048,
 }  # dictionary to store the heights of the pieces in meters
 
-# TODO fix castle move
-
 stockfish_difficulty_level = {
     "easy": 600,
     "medium": 1500,
