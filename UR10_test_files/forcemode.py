@@ -1,8 +1,8 @@
 import math
 import rtde_control
+from colorama import Fore
 
-
-HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 RTDE_FREQUENCY = 10  # Hz to update from robot
 control_interface = rtde_control.RTDEControlInterface(HOSTNAME, RTDE_FREQUENCY)
@@ -47,7 +47,7 @@ selection_vector = [
 tcp_down = [
     0,
     0,
-    -0.1,  # -0.1 newton force in negative z direction (onto the piece)
+    -10,
     0,
     0,
     0,
@@ -82,20 +82,39 @@ def move_to_square(pos, height):
 
 
 def forcemode_lower():
-    for _ in range(
-        RTDE_FREQUENCY * FORCE_SECONDS
-    ):  # number of cycles to make (hz * duration in seconds)
+    """
+    Lower the TCP to make contact with the piece
+    """
+    tcp_cycles = 0
+    while tcp_cycles < 200:
         t_start = control_interface.initPeriod()
         # Move the robot down for 2 seconds
+        tcp_cycles += 1
+        print(tcp_cycles)
         control_interface.forceMode(
             task_frame, selection_vector, tcp_down, FORCE_TYPE, limits
         )
         control_interface.waitPeriod(t_start)
-
+    if tcp_cycles == 200:
+        print(Fore.RED + "TCP was not able to find the piece")
     control_interface.forceModeStop()
 
 
-move_to_square({"x": 0, "y": 0}, BOARD_HEIGHT)
+# def forcemode_lower():
+#     for _ in range(
+#         RTDE_FREQUENCY * FORCE_SECONDS
+#     ):  # number of cycles to make (hz * duration in seconds)
+#         t_start = control_interface.initPeriod()
+#         # Move the robot down for 2 seconds
+#         control_interface.forceMode(
+#             task_frame, selection_vector, tcp_down, FORCE_TYPE, limits
+#         )
+#         control_interface.waitPeriod(t_start)
+
+#     control_interface.forceModeStop()
+
+
+# move_to_square({"x": 0, "y": 0}, BOARD_HEIGHT)
 forcemode_lower()
 
 # Execute 10Hz control loop for 2 seconds, each cycle is 100ms

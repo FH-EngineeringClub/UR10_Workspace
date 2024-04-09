@@ -66,13 +66,13 @@ selection_vector = [
 tcp_down = [
     0,
     0,
-    -0.1,  # -0.1 newton force in negative z direction (onto the piece)
+    -30,  # -0.1 newton force in negative z direction (onto the piece)
     0,
     0,
     0,
 ]  # The force vector [x, y, z, rx, ry, rz] in the force frame.
 FORCE_TYPE = 2  # The type of force to apply
-limits = [2, 2, 1.5, 1, 1, 1]  # The tcp speed limits [x, y, z, rx, ry, rz]
+limits = [2, 2, 0.01, 1, 1, 1]  # The tcp speed limits [x, y, z, rx, ry, rz]
 
 TCP_CONTACT = control_interface.toolContact(
     [0, 0, 1, 0, 0, 0]
@@ -99,6 +99,8 @@ stockfish_difficulty_level = {
     "expert": 2100,
     "gm": 3500,
 }  # dictionary to store the ELO difficulty levels of stockfish
+
+# TODO check for en peassant and castling
 
 osSystem = platform.system()  # Get the OS
 if osSystem == "Darwin" or "Linux":
@@ -146,7 +148,7 @@ def forcemode_lower():
     Lower the TCP to make contact with the piece
     """
     tcp_cycles = 0
-    while TCP_CONTACT == 0 and tcp_cycles < 200:
+    while TCP_CONTACT == 0 and tcp_cycles < 15:
         t_start = control_interface.initPeriod()
         # Move the robot down for 2 seconds
         tcp_cycles += 1
@@ -370,6 +372,7 @@ while not board.is_game_over():
     try:
         board.parse_san(inputmove)
     except ValueError:
+        print(board.parse_san(inputmove))
         print(Fore.RED + "Move is not in SAN format. Please try again.")
         continue
 
