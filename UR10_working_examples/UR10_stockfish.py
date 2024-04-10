@@ -18,7 +18,7 @@ import chess.polyglot
 from stockfish import Stockfish
 from colorama import Fore
 
-HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 RTDE_FREQUENCY = 10  # Hz to update data from robot
 
@@ -112,6 +112,7 @@ elif osSystem == "Windows":
 else:
     exit("No binary or executable found for stockfish")
 
+# TODO give the option of continuing from board.svg or starting a new game
 board = chess.Board()  # Create a new board
 
 
@@ -143,6 +144,7 @@ def move_to_square(pos, height):
     )
 
 
+# TODO switch to using moveUntilContact
 def forcemode_lower():
     """
     Lower the TCP to make contact with the piece
