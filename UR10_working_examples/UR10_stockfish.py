@@ -100,7 +100,7 @@ stockfish_difficulty_level = {
     "gm": 3500,
 }  # dictionary to store the ELO difficulty levels of stockfish
 
-# TODO check for en peassant and castling
+# TODO check for En passant and castling
 
 osSystem = platform.system()  # Get the OS
 if osSystem == "Darwin" or "Linux":
@@ -112,8 +112,21 @@ elif osSystem == "Windows":
 else:
     exit("No binary or executable found for stockfish")
 
-# TODO give the option of continuing from board.svg or starting a new game
-board = chess.Board()  # Create a new board
+
+start_new_game = input(
+    Fore.YELLOW + "Would you like to continue the last saved game? (Y/n)"
+)
+if start_new_game != "y" and start_new_game != "Y" and start_new_game != "":
+    board = chess.Board()  # Create a new board
+    print(Fore.GREEN + "New game started!")
+    print(board)
+else:
+    with open("lastgame.txt", "r", encoding="utf-8") as file:
+        lastgame = file.read()
+        board = chess.Board(lastgame)  # Load the last saved game
+        print(lastgame)
+        print(board)
+        print(Fore.GREEN + "Last game loaded!")
 
 
 def translate(x, y):
@@ -266,6 +279,16 @@ def display_board():
         file_obj.write(chess.svg.board(board))  # Write the board to the file
 
 
+def save_last_play():
+    """
+    Save the last played game to a text file.
+    """
+    with open(
+        "lastgame.txt", "w", encoding="utf-8"
+    ) as file_obj:  # Open a file to write to with explicit encoding
+        file_obj.write(board.fen())  # Write the board to the file
+
+
 # Opening UR10 head positions JSON file
 f = open("setup.json", encoding="utf-8")
 data = json.load(f)
@@ -372,20 +395,19 @@ while not board.is_game_over():
         continue  # Skip the rest of the loop and start from the beginning
 
     try:
-        board.parse_san(inputmove)
+        valid_move = (
+            chess.Move.from_uci(inputmove) in board.pseudo_legal_moves
+        )  # Check if the move is valid
     except ValueError:
-        print(board.parse_san(inputmove))
         print(Fore.RED + "Move is not in SAN format. Please try again.")
         continue
-
-    valid_move = (
-        chess.Move.from_uci(inputmove) in board.pseudo_legal_moves
-    )  # Check if the move is valid
 
     if valid_move is True:
         board.push_san(inputmove)  # Push the move to the board
 
         display_board()  # Update the board svg
+
+        save_last_play()  # Save the last played move
 
         stockfish.set_fen_position(board.fen())  # Set the position of the board
         bestMove = stockfish.get_top_moves(1)  # Get the best move
@@ -443,6 +465,8 @@ while not board.is_game_over():
         )  # Push the best move to the board
 
         display_board()  # Update the board svg
+
+        save_last_play()  # Save the last played move
     else:
         print(Fore.RED + "Not a legal move, Please try again")
 
