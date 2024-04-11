@@ -1,11 +1,14 @@
 import math
 import rtde_control
+import rtde_receive
 from colorama import Fore
 
-HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 RTDE_FREQUENCY = 10  # Hz to update from robot
 control_interface = rtde_control.RTDEControlInterface(HOSTNAME, RTDE_FREQUENCY)
+receive_interface = rtde_receive.RTDEReceiveInterface(HOSTNAME, RTDE_FREQUENCY)
+
 
 ANGLE = 44.785  # angle between the robot base and the chess board (in degrees)
 DX = 401.34  # Home TCP position relative to base (in mm)
@@ -100,23 +103,43 @@ def forcemode_lower():
     control_interface.forceModeStop()
 
 
-# def forcemode_lower():
-#     for _ in range(
-#         RTDE_FREQUENCY * FORCE_SECONDS
-#     ):  # number of cycles to make (hz * duration in seconds)
-#         t_start = control_interface.initPeriod()
-#         # Move the robot down for 2 seconds
-#         control_interface.forceMode(
-#             task_frame, selection_vector, tcp_down, FORCE_TYPE, limits
-#         )
-#         control_interface.waitPeriod(t_start)
+move_to_square({"x": 0, "y": 0}, BOARD_HEIGHT)
 
-#     control_interface.forceModeStop()
+print(dir(control_interface))
+# control_interface.moveL(target, 0.25, 0.5, true)
+receive_interface.startContactDetection()  # // detect contact in direction of TCP movement
+
+# // now wait until the robot stops - it either stops if it has reached
+# // the target pose or if a contact has been detected
+# // you can use the readContactDetection() function, to check if a contact
+# // has been detected.
+contact_detected = receive_interface.readContactDetection()
+contact_detected = receive_interface.stopContactDetection()
 
 
-# move_to_square({"x": 0, "y": 0}, BOARD_HEIGHT)
-forcemode_lower()
+control_interface.moveUntilContact(
+    [
+        1,
+        1,
+        1,
+        1,
+        0,
+        0,
+    ],  # xd: tool speed [m/s] (spatial vector)
+    [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+    ],  # direction: List of six floats. The first three elements are interpreted as a 3D vector
+    # (in the robot base coordinate system) giving the direction in which contacts should be detected.
+    # If all elements of the list are zero, contacts from all directions are considered.
+    # You can also set direction=get_target_tcp_speed() in which case it will detect contacts
+    # in the direction of the TCP movement.
+    #
+    1.2,  # acceleration: tool position acceleration [m/s^2]
+)
 
-# Execute 10Hz control loop for 2 seconds, each cycle is 100ms
-
-# control_interface.stopScript()
+# forcemode_lower()

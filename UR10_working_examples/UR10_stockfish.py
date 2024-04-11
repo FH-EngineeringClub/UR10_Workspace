@@ -74,8 +74,10 @@ tcp_down = [
 FORCE_TYPE = 2  # The type of force to apply
 limits = [2, 2, 0.01, 1, 1, 1]  # The tcp speed limits [x, y, z, rx, ry, rz]
 
-TCP_CONTACT = control_interface.toolContact(
-    [0, 0, 1, 0, 0, 0]
+TCP_CONTACT = (
+    control_interface.toolContact(  # this is not implemented correctly in python
+        [0, 0, 1, 0, 0, 0]  # a workaround may be moveUntilContact
+    )
 )  # Check if the TCP is in contact with the piece
 
 piece_heights = {
@@ -124,7 +126,6 @@ else:
     with open("lastgame.txt", "r", encoding="utf-8") as file:
         lastgame = file.read()
         board = chess.Board(lastgame)  # Load the last saved game
-        print(lastgame)
         print(board)
         print(Fore.GREEN + "Last game loaded!")
 
@@ -168,7 +169,6 @@ def forcemode_lower():
         # Move the robot down for 2 seconds
         tcp_cycles += 1
         print(tcp_cycles)
-        print(TCP_CONTACT)
         control_interface.forceMode(
             task_frame, selection_vector, tcp_down, FORCE_TYPE, limits
         )
@@ -258,10 +258,6 @@ OUTPUT_24 = "sec myProg():\n\
 end\n\
 myProg()\n"
 
-OUTPUT_12 = "sec myProg():\n\
-    set_tool_voltage(12)\n\
-end\n\
-myProg()\n"
 
 OUTPUT_0 = "sec myProg():\n\
     set_tool_voltage(0)\n\
@@ -330,7 +326,7 @@ def remove_piece(from_pos, board_height, lift_height):
     print(Fore.CYAN + "Lowering TCP...")
     forcemode_lower()
     print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
-    send_command_to_robot(OUTPUT_12)  # energize the electromagnet
+    send_command_to_robot(OUTPUT_24)  # energize the electromagnet
     print(Fore.CYAN + "Lifting piece...")
     move_to_square(from_pos, lift_height)
     lift_piece(from_pos)
