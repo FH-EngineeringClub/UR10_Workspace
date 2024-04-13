@@ -3,7 +3,7 @@ import rtde_control
 import rtde_receive
 from colorama import Fore
 
-HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 RTDE_FREQUENCY = 10  # Hz to update from robot
 control_interface = rtde_control.RTDEControlInterface(HOSTNAME, RTDE_FREQUENCY)
@@ -43,19 +43,19 @@ selection_vector = [
     0,
     0,
     1,
-    0,
-    0,
-    0,
+    1,
+    1,
+    1,
 ]  # A 6d vector that defines which degrees of freedom are controlled by the force/torque sensor.
 tcp_down = [
     0,
     0,
-    -10,
+    -30,
     0,
     0,
     0,
 ]  # The force vector [x, y, z, rx, ry, rz] in the force frame.
-FORCE_TYPE = 2  # The type of force to apply
+FORCE_TYPE = 3  # The type of force to apply
 limits = [2, 2, 1.5, 1, 1, 1]  # The tcp speed limits [x, y, z, rx, ry, rz]
 
 
@@ -84,12 +84,19 @@ def move_to_square(pos, height):
     )
 
 
+TCP_CONTACT = (
+    control_interface.toolContact(  # this is not implemented correctly in python
+        [0, 0, 1, 0, 0, 0]  # a workaround may be moveUntilContact
+    )
+)  # Check if the TCP is in contact with the piece
+
+
 def forcemode_lower():
     """
     Lower the TCP to make contact with the piece
     """
     tcp_cycles = 0
-    while tcp_cycles < 200:
+    while TCP_CONTACT == 0 and tcp_cycles < 150:
         t_start = control_interface.initPeriod()
         # Move the robot down for 2 seconds
         tcp_cycles += 1
@@ -98,48 +105,41 @@ def forcemode_lower():
             task_frame, selection_vector, tcp_down, FORCE_TYPE, limits
         )
         control_interface.waitPeriod(t_start)
-    if tcp_cycles == 200:
+    if tcp_cycles == 150:
         print(Fore.RED + "TCP was not able to find the piece")
     control_interface.forceModeStop()
 
 
-move_to_square({"x": 0, "y": 0}, BOARD_HEIGHT)
+move_to_square({"x": -100, "y": 0}, BOARD_HEIGHT + 0.20)
 
-print(dir(control_interface))
-# control_interface.moveL(target, 0.25, 0.5, true)
-receive_interface.startContactDetection()  # // detect contact in direction of TCP movement
+forcemode_lower()
 
-# // now wait until the robot stops - it either stops if it has reached
-# // the target pose or if a contact has been detected
-# // you can use the readContactDetection() function, to check if a contact
-# // has been detected.
-contact_detected = receive_interface.readContactDetection()
-contact_detected = receive_interface.stopContactDetection()
+# print(dir(control_interface))
 
 
-control_interface.moveUntilContact(
-    [
-        1,
-        1,
-        1,
-        1,
-        0,
-        0,
-    ],  # xd: tool speed [m/s] (spatial vector)
-    [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-    ],  # direction: List of six floats. The first three elements are interpreted as a 3D vector
-    # (in the robot base coordinate system) giving the direction in which contacts should be detected.
-    # If all elements of the list are zero, contacts from all directions are considered.
-    # You can also set direction=get_target_tcp_speed() in which case it will detect contacts
-    # in the direction of the TCP movement.
-    #
-    1.2,  # acceleration: tool position acceleration [m/s^2]
-)
+# control_interface.moveUntilContact(
+#     [
+#         1,
+#         1,
+#         1,
+#         1,
+#         0,
+#         0,
+#     ],  # xd: tool speed [m/s] (spatial vector)
+#     [
+#         0,
+#         0,
+#         0,
+#         0,
+#         0,
+#         0,
+#     ],  # direction: List of six floats. The first three elements are interpreted as a 3D vector
+#     # (in the robot base coordinate system) giving the direction in which contacts should be detected.
+#     # If all elements of the list are zero, contacts from all directions are considered.
+#     # You can also set direction=get_target_tcp_speed() in which case it will detect contacts
+#     # in the direction of the TCP movement.
+#     #
+#     1.2,  # acceleration: tool position acceleration [m/s^2]
+# )
 
-# forcemode_lower()
+# # forcemode_lower()

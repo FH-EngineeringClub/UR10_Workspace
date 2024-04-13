@@ -40,7 +40,7 @@ TCP_RX = 2.7821  # rx (x rotation of TCP in radians)
 TCP_RY = -1.465  # ry (y rotation of TCP in radians)
 TCP_RZ = -0.0416  # rz (z rotation of TCP in radians)
 
-BIN_POSITION = {"x": 202.8, "y": -354.93}  # position to move to when not in use
+BIN_POSITION = {"x": 202.8, "y": -254.93}  # position to move to when not in use
 
 MOVE_SPEED = 0.5  # speed of the tool [m/s]
 MOVE_ACCEL = 0.3  # acceleration of the tool [m/s^2]
@@ -82,7 +82,7 @@ TCP_CONTACT = (
 
 piece_heights = {
     "k": 0.08049,
-    "K": 0.08049 - 0.002,
+    "K": 0.08049,
     "p": 0.03345 + 0.002,  # add 2mm to the height of the pawn
     "P": 0.03345 + 0.002,  # add 2mm to the height of the pawn
     "r": 0.04604 - 0.002,
@@ -94,6 +94,8 @@ piece_heights = {
     "q": 0.07048,
     "Q": 0.07048,
 }  # dictionary to store the heights of the pieces in meters
+
+# TODO fix switching sides when saving game
 
 stockfish_difficulty_level = {
     "easy": 600,
@@ -158,7 +160,7 @@ def move_to_square(pos, height):
     )
 
 
-# TODO switch to using moveUntilContact
+# TODO switch to using moveUntilContact (may not be possible in python)
 def forcemode_lower():
     """
     Lower the TCP to make contact with the piece
@@ -340,7 +342,7 @@ def remove_piece(from_pos, board_height, lift_height):
 
 
 stockfish = Stockfish(path=stockfishPath)
-stockfish.set_depth(20)  # How deep the AI looks
+stockfish.set_depth(8)  # How deep the AI looks
 # stockfish.set_skill_level(20)  # Set the difficulty based skill level
 # stockfish.set_elo_rating(1500)  # Set the difficulty based on elo rating
 stockfish.get_parameters()  # Get all the parameters of stockfish
@@ -423,6 +425,7 @@ while not board.is_game_over():
             from_piece_type = board.piece_at(chess.parse_square(move_from))
             to_piece_type = board.piece_at(chess.parse_square(move_to))
             to_position_height = piece_heights[from_piece_type.symbol()]
+            save_last_play()  # Save the last played move
             direct_move_piece(
                 from_position,
                 to_position,
@@ -448,6 +451,7 @@ while not board.is_game_over():
             to_piece_type = board.piece_at(chess.parse_square(move_to))
             to_position_height = piece_heights[to_piece_type.symbol()]
             from_position_height = piece_heights[from_piece_type.symbol()]
+            save_last_play()  # Save the last played move
             remove_piece(to_position, to_position_height + BOARD_HEIGHT, LIFT_HEIGHT)
             direct_move_piece(
                 from_position,
@@ -472,3 +476,6 @@ print(Fore.CYAN + "Moving to bin position...")
 
 print(board.outcome())  # Print the winner of the game
 print(Fore.GREEN + "Game over!")
+
+
+# TODO fix no matching legal moves error raise IllegalMoveError(f"no matching legal move for {move.uci()} ({SQUARE_NAMES[from_square]} -> {SQUARE_NAMES[to_square]}) in {self.fen()}") chess.IllegalMoveError: no matching legal move for h1g1 (h1 -> g1) in 4rrk1/2q2ppp/1p6/2b5/P1P2n2/2R2bP1/P3p2P/R1B1Q2K w - - 0 30
