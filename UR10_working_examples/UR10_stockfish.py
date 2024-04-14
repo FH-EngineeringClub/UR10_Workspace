@@ -95,16 +95,12 @@ piece_heights = {
     "Q": 0.07048,
 }  # dictionary to store the heights of the pieces in meters
 
-# TODO fix switching sides when saving game
-
 stockfish_difficulty_level = {
     "easy": 600,
     "medium": 1500,
     "expert": 2100,
     "gm": 3500,
 }  # dictionary to store the ELO difficulty levels of stockfish
-
-# TODO check for En passant and castling
 
 osSystem = platform.system()  # Get the OS
 if osSystem == "Darwin" or "Linux":
@@ -160,7 +156,6 @@ def move_to_square(pos, height):
     )
 
 
-# TODO switch to using moveUntilContact (may not be possible in python)
 def forcemode_lower():
     """
     Lower the TCP to make contact with the piece
@@ -476,6 +471,3 @@ print(Fore.CYAN + "Moving to bin position...")
 
 print(board.outcome())  # Print the winner of the game
 print(Fore.GREEN + "Game over!")
-
-
-# TODO fix no matching legal moves error raise IllegalMoveError(f"no matching legal move for {move.uci()} ({SQUARE_NAMES[from_square]} -> {SQUARE_NAMES[to_square]}) in {self.fen()}") chess.IllegalMoveError: no matching legal move for h1g1 (h1 -> g1) in 4rrk1/2q2ppp/1p6/2b5/P1P2n2/2R2bP1/P3p2P/R1B1Q2K w - - 0 30
