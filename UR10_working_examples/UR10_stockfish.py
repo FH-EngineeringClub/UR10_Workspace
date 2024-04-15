@@ -18,7 +18,7 @@ import chess.polyglot
 from stockfish import Stockfish
 from colorama import Fore
 
-HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 RTDE_FREQUENCY = 10  # Hz to update data from robot
 
@@ -404,56 +404,93 @@ while not board.is_game_over():
 
         stockfish.set_fen_position(board.fen())  # Set the position of the board
         bestMove = stockfish.get_top_moves(1)  # Get the best move
-        target_square = chess.Move.from_uci(bestMove[0]["Move"]).to_square
-        origin_square = chess.Move.from_uci(bestMove[0]["Move"]).from_square
-
-        if board.piece_at(target_square) is None:
-            print(Fore.CYAN + "Space not occupied")
-            REMOVING_PIECE = 0
-
-            move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-            move_from = move[:2]  # from square
-            move_to = move[-2:]  # to square
-            print(move_from, move_to)
-            from_position = data[move_from]
-            to_position = data[move_to]
-            from_piece_type = board.piece_at(chess.parse_square(move_from))
-            to_piece_type = board.piece_at(chess.parse_square(move_to))
-            to_position_height = piece_heights[from_piece_type.symbol()]
+        uci_format_bestMove = chess.Move.from_uci(bestMove[0]["Move"])
+        target_square = uci_format_bestMove.to_square
+        origin_square = uci_format_bestMove.from_square
+        print()
+        if board.is_kingside_castling(uci_format_bestMove):
+            print("Stockfish is castling kingside")
             save_last_play()  # Save the last played move
             direct_move_piece(
-                from_position,
-                to_position,
-                to_position_height + BOARD_HEIGHT,
+                "e8",
+                "g8",
+                piece_heights["K"] + BOARD_HEIGHT,  # add king height here
+                LIFT_HEIGHT,
+            )
+            direct_move_piece(
+                "h8",
+                "f8",
+                piece_heights["R"] + BOARD_HEIGHT,
+                LIFT_HEIGHT,
+            )
+        elif board.is_queenside_castling(uci_format_bestMove):
+            print("Stockfish is castling queenside")
+            save_last_play()
+            direct_move_piece(
+                "e8",
+                "c8",
+                piece_heights["K"] + BOARD_HEIGHT,  # add king height here
+                LIFT_HEIGHT,
+            )
+            direct_move_piece(
+                "a8",
+                "d8",
+                piece_heights["R"] + BOARD_HEIGHT,
                 LIFT_HEIGHT,
             )
 
         else:
-            print(
-                Fore.CYAN + "Space occupied by",
-                board.piece_at(target_square),
-                "removing piece...",
-            )
-            REMOVING_PIECE = 1
+            print("Stockfish is not castling")
 
-            move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-            move_from = move[:2]  # from square
-            move_to = move[-2:]  # to square
-            print(move_from, move_to)
-            from_position = data[move_from]
-            to_position = data[move_to]
-            from_piece_type = board.piece_at(chess.parse_square(move_from))
-            to_piece_type = board.piece_at(chess.parse_square(move_to))
-            to_position_height = piece_heights[to_piece_type.symbol()]
-            from_position_height = piece_heights[from_piece_type.symbol()]
-            save_last_play()  # Save the last played move
-            remove_piece(to_position, to_position_height + BOARD_HEIGHT, LIFT_HEIGHT)
-            direct_move_piece(
-                from_position,
-                to_position,
-                from_position_height + BOARD_HEIGHT,
-                LIFT_HEIGHT,
-            )
+            if board.piece_at(target_square) is None:
+                print(Fore.CYAN + "Space not occupied")
+                REMOVING_PIECE = 0
+
+                move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
+                move_from = move[:2]  # from square
+                move_to = move[-2:]  # to square
+                print(move_from, move_to)
+                from_position = data[move_from]
+                to_position = data[move_to]
+                from_piece_type = board.piece_at(chess.parse_square(move_from))
+                to_piece_type = board.piece_at(chess.parse_square(move_to))
+                to_position_height = piece_heights[from_piece_type.symbol()]
+                save_last_play()  # Save the last played move
+                direct_move_piece(
+                    from_position,
+                    to_position,
+                    to_position_height + BOARD_HEIGHT,
+                    LIFT_HEIGHT,
+                )
+
+            else:
+                print(
+                    Fore.CYAN + "Space occupied by",
+                    board.piece_at(target_square),
+                    "removing piece...",
+                )
+                REMOVING_PIECE = 1
+
+                move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
+                move_from = move[:2]  # from square
+                move_to = move[-2:]  # to square
+                print(move_from, move_to)
+                from_position = data[move_from]
+                to_position = data[move_to]
+                from_piece_type = board.piece_at(chess.parse_square(move_from))
+                to_piece_type = board.piece_at(chess.parse_square(move_to))
+                to_position_height = piece_heights[to_piece_type.symbol()]
+                from_position_height = piece_heights[from_piece_type.symbol()]
+                save_last_play()  # Save the last played move
+                remove_piece(
+                    to_position, to_position_height + BOARD_HEIGHT, LIFT_HEIGHT
+                )
+                direct_move_piece(
+                    from_position,
+                    to_position,
+                    from_position_height + BOARD_HEIGHT,
+                    LIFT_HEIGHT,
+                )
 
         print(
             Fore.GREEN + "Stockfish moves:", board.push_san(bestMove[0]["Move"])
