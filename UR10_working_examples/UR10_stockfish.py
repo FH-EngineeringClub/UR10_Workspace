@@ -373,14 +373,6 @@ else:
     )
 
 while not board.is_game_over():
-    if board.turn == chess.WHITE:
-        print(Fore.WHITE + "White to move")
-    else:
-        print(Fore.YELLOW + "Robot is on wrong side, skipping turn")
-        board.push_san("0000")  # Push a blank move to the board
-        save_last_play()  # Save the last played move
-        continue
-
     if zero_player_mode == "TRUE":
         move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
         print(Fore.CYAN + "Moving to bin position...")
@@ -395,8 +387,11 @@ while not board.is_game_over():
         origin_square = uci_format_bestMove.from_square
         if board.is_kingside_castling(uci_format_bestMove):
             print("Stockfish is castling kingside")
+            if board.turn == chess.WHITE:
+                move = "e1g1"  # e.g. "e2e4" or "e7e5"
+            else:
+                move = "e8g8"  # e.g. "e2e4" or "e7e5"
             REMOVING_PIECE = 0
-            move = "e8g8"  # e.g. "e2e4" or "e7e5"
             move_from = move[:2]  # from square
             move_to = move[-2:]  # to square
             print(move_from, move_to)
@@ -411,7 +406,10 @@ while not board.is_game_over():
                 to_position_height + BOARD_HEIGHT,
                 LIFT_HEIGHT,
             )
-            move = "h8f8"  # e.g. "e2e4" or "e7e5"
+            if board.turn == chess.WHITE:
+                move = "h1f1"  # e.g. "e2e4" or "e7e5"
+            else:
+                move = "h8f8"  # e.g. "e2e4" or "e7e5"
             move_from = move[:2]  # from square
             move_to = move[-2:]  # to square
             print(move_from, move_to)
@@ -429,19 +427,44 @@ while not board.is_game_over():
             save_last_play()  # Save the last played move
         elif board.is_queenside_castling(uci_format_bestMove):
             print("Stockfish is castling queenside")
+            if board.turn == chess.WHITE:
+                move = "e1c1"  # e.g. "e2e4" or "e7e5"
+            else:
+                move = "e8c8"  # e.g. "e2e4" or "e7e5"
+            REMOVING_PIECE = 0
+            move_from = move[:2]  # from square
+            move_to = move[-2:]  # to square
+            print(move_from, move_to)
+            from_position = data[move_from]
+            to_position = data[move_to]
+            from_piece_type = board.piece_at(chess.parse_square(move_from))
+            to_piece_type = board.piece_at(chess.parse_square(move_to))
+            to_position_height = piece_heights[from_piece_type.symbol()]
             direct_move_piece(
-                "e8",
-                "c8",
-                piece_heights["K"] + BOARD_HEIGHT,  # add king height here
+                from_position,
+                to_position,
+                to_position_height + BOARD_HEIGHT,
                 LIFT_HEIGHT,
             )
+            if board.turn == chess.WHITE:
+                move = "a1d1"  # e.g. "e2e4" or "e7e5"
+            else:
+                move = "a8d8"  # e.g. "e2e4" or "e7e5"
+            move_from = move[:2]  # from square
+            move_to = move[-2:]  # to square
+            print(move_from, move_to)
+            from_position = data[move_from]
+            to_position = data[move_to]
+            from_piece_type = board.piece_at(chess.parse_square(move_from))
+            to_piece_type = board.piece_at(chess.parse_square(move_to))
+            to_position_height = piece_heights[from_piece_type.symbol()]
             direct_move_piece(
-                "a8",
-                "d8",
-                piece_heights["R"] + BOARD_HEIGHT,
+                from_position,
+                to_position,
+                to_position_height + BOARD_HEIGHT,
                 LIFT_HEIGHT,
             )
-            save_last_play()
+            save_last_play()  # Save the last played move
 
         else:
             print("Stockfish is not castling")
@@ -505,6 +528,13 @@ while not board.is_game_over():
         save_last_play()  # Save the last played move
 
     else:
+        if board.turn == chess.WHITE:
+            print(Fore.WHITE + "White to move")
+        else:
+            print(Fore.YELLOW + "Robot is on wrong side, skipping turn")
+            board.push_san("0000")  # Push a blank move to the board
+            save_last_play()  # Save the last played move
+            continue
         move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
         print(Fore.CYAN + "Moving to bin position...")
 
