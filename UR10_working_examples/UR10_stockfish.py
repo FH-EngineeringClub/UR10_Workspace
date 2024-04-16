@@ -573,8 +573,11 @@ while not board.is_game_over():
 
         if inputmove == "undo":
             print("Undoing last move...")
-            for _ in range(2):
-                board.pop()
+            try:
+                for _ in range(2):
+                    board.pop()
+            except IndexError:
+                print(Fore.RED + "No moves to undo")
             display_board()
             save_last_play()
             continue
