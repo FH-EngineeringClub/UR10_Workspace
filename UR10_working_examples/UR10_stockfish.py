@@ -553,7 +553,9 @@ while not board.is_game_over():
                 print(Fore.WHITE + move.uci(), end=" ")
 
         inputmove = input(
-            "\n" + Fore.BLUE + "Input move from the following legal moves (SAN format):"
+            "\n"
+            + Fore.BLUE
+            + "Input move from the following legal moves, or 'undo' to undo (SAN format):"
         )  # Get the move from the user
 
         user_confirmation = input(
@@ -569,13 +571,21 @@ while not board.is_game_over():
             )  # If the user doesn't confirm the move, ask for a new move
             continue  # Skip the rest of the loop and start from the beginning
 
-        try:
-            valid_move = (
-                chess.Move.from_uci(inputmove) in board.pseudo_legal_moves
-            )  # Check if the move is valid
-        except ValueError:
-            print(Fore.RED + "Move is not in SAN format. Please try again.")
+        if inputmove == "undo":
+            print("Undoing last move...")
+            for _ in range(2):
+                board.pop()
+            display_board()
+            save_last_play()
             continue
+        else:
+            try:
+                valid_move = (
+                    chess.Move.from_uci(inputmove) in board.pseudo_legal_moves
+                )  # Check if the move is valid
+            except ValueError:
+                print(Fore.RED + "Move is not in SAN format. Please try again.")
+                continue
 
         if valid_move is True:
             board.push_san(inputmove)  # Push the move to the board
