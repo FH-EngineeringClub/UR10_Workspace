@@ -69,8 +69,74 @@ def position_2():
     )
 
 
-position_0()
-position_1()
-position_2()
-position_1()
-position_0()
+def position_3():
+    control_interface.moveJ(  # Position 2
+        [
+            math.radians(-273),
+            math.radians(-142),
+            math.radians(-43),
+            math.radians(255),
+            math.radians(66),
+            math.radians(-86),
+        ],  # q: joint positions
+        0.5,  # speed: joint speed of leading axis [rad/s]
+        0.5,  # acceleration: joint acceleration of leading axis [rad/s^2]
+    )
+
+
+def position_4():
+    control_interface.moveJ(  # Position 2
+        [
+            math.radians(-303),
+            math.radians(-176),
+            math.radians(16),
+            math.radians(281),
+            math.radians(95),
+            math.radians(-86),
+        ],  # q: joint positions
+        0.5,  # speed: joint speed of leading axis [rad/s]
+        0.5,  # acceleration: joint acceleration of leading axis [rad/s^2]
+    )
+
+
+def position_5():
+    control_interface.moveJ(  # Position 2
+        [
+            math.radians(-302),
+            math.radians(-164),
+            math.radians(108),
+            math.radians(220),
+            math.radians(144),
+            math.radians(-86),
+        ],  # q: joint positions
+        0.5,  # speed: joint speed of leading axis [rad/s]
+        0.5,  # acceleration: joint acceleration of leading axis [rad/s^2]
+    )
+
+
+def position_6():
+    control_interface.moveJ(  # Position 2
+        [
+            math.radians(-328),
+            math.radians(-96),
+            math.radians(64),
+            math.radians(216),
+            math.radians(224),
+            math.radians(-86),
+        ],  # q: joint positions
+        0.5,  # speed: joint speed of leading axis [rad/s]
+        0.5,  # acceleration: joint acceleration of leading axis [rad/s^2]
+    )
+
+
+for _ in range(5):
+    position_0()
+    position_1()
+    position_2()
+    position_3()
+    position_4()
+    position_5()
+    position_6()
+
+# position_1()
+# position_0()

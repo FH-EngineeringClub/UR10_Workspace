@@ -19,7 +19,7 @@ import chess.polyglot
 from stockfish import Stockfish
 from colorama import Fore
 
-HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 RTDE_FREQUENCY = 10  # Hz to update data from robot
 
@@ -82,18 +82,18 @@ TCP_CONTACT = (
 )  # Check if the TCP is in contact with the piece
 
 piece_heights = {
-    "k": 0.08049,
-    "K": 0.08049,
+    "k": 0.08049 - 0.003,
+    "K": 0.08049 - 0.001,
     "p": 0.03345 + 0.002,  # add 2mm to the height of the pawn
     "P": 0.03345 + 0.002,  # add 2mm to the height of the pawn
-    "r": 0.04604 - 0.002,
-    "R": 0.04604 - 0.002,
+    "r": 0.053 - 0.008,
+    "R": 0.053 - 0.008,
     "n": 0.04569,
     "N": 0.04569,
     "b": 0.05902 - 0.002,
     "B": 0.05902 - 0.002,
-    "q": 0.07048,
-    "Q": 0.07048,
+    "q": 0.068 + 0.002,
+    "Q": 0.068 + 0.002,
 }  # dictionary to store the heights of the pieces in meters
 
 stockfish_difficulty_level = {
@@ -181,7 +181,7 @@ def forcemode_lower():
             task_frame, selection_vector, tcp_down, FORCE_TYPE, limits
         )
         control_interface.waitPeriod(t_start)
-    if tcp_cycles == 200:
+    if tcp_cycles == 20:
         print(Fore.RED + "TCP was not able to find the piece")
     control_interface.forceModeStop()
 
@@ -308,6 +308,7 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
     move_to_square(from_pos, lift_height)
     move_to_square(from_pos, board_height)
     print(Fore.CYAN + "Lowering TCP...")
+    sleep(0.2)
     forcemode_lower()
     print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
@@ -332,6 +333,7 @@ def remove_piece(from_pos, board_height, lift_height):
     move_to_square(from_pos, lift_height)
     move_to_square(from_pos, board_height)
     print(Fore.CYAN + "Lowering TCP...")
+    sleep(0.2)
     forcemode_lower()
     print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
