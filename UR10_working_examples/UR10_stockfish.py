@@ -19,7 +19,7 @@ import chess.polyglot
 from stockfish import Stockfish
 from colorama import Fore
 
-HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 RTDE_FREQUENCY = 10  # Hz to update data from robot
 
@@ -373,8 +373,15 @@ else:
     )
 
 while not board.is_game_over():
+    if board.turn == chess.WHITE:
+        print(Fore.WHITE + "White to move")
+    else:
+        print(Fore.YELLOW + "Robot is on wrong side, skipping turn")
+        board.push_san("0000")  # Push a blank move to the board
+        save_last_play()  # Save the last played move
+        continue
+
     if zero_player_mode == "TRUE":
-        print("Entering zero player mode...")
         move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
         print(Fore.CYAN + "Moving to bin position...")
         display_board()  # Update the board svg
@@ -388,7 +395,6 @@ while not board.is_game_over():
         origin_square = uci_format_bestMove.from_square
         if board.is_kingside_castling(uci_format_bestMove):
             print("Stockfish is castling kingside")
-            save_last_play()  # Save the last played move
             REMOVING_PIECE = 0
             move = "e8g8"  # e.g. "e2e4" or "e7e5"
             move_from = move[:2]  # from square
@@ -420,9 +426,9 @@ while not board.is_game_over():
                 to_position_height + BOARD_HEIGHT,
                 LIFT_HEIGHT,
             )
+            save_last_play()  # Save the last played move
         elif board.is_queenside_castling(uci_format_bestMove):
             print("Stockfish is castling queenside")
-            save_last_play()
             direct_move_piece(
                 "e8",
                 "c8",
@@ -435,6 +441,7 @@ while not board.is_game_over():
                 piece_heights["R"] + BOARD_HEIGHT,
                 LIFT_HEIGHT,
             )
+            save_last_play()
 
         else:
             print("Stockfish is not castling")
@@ -452,13 +459,13 @@ while not board.is_game_over():
                 from_piece_type = board.piece_at(chess.parse_square(move_from))
                 to_piece_type = board.piece_at(chess.parse_square(move_to))
                 to_position_height = piece_heights[from_piece_type.symbol()]
-                save_last_play()  # Save the last played move
                 direct_move_piece(
                     from_position,
                     to_position,
                     to_position_height + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
+                save_last_play()  # Save the last played move
 
             else:
                 print(
@@ -478,7 +485,6 @@ while not board.is_game_over():
                 to_piece_type = board.piece_at(chess.parse_square(move_to))
                 to_position_height = piece_heights[to_piece_type.symbol()]
                 from_position_height = piece_heights[from_piece_type.symbol()]
-                save_last_play()  # Save the last played move
                 remove_piece(
                     to_position, to_position_height + BOARD_HEIGHT, LIFT_HEIGHT
                 )
@@ -488,6 +494,7 @@ while not board.is_game_over():
                     from_position_height + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
+                save_last_play()  # Save the last played move
 
         print(
             Fore.GREEN + "Stockfish moves:", board.push_san(bestMove[0]["Move"])
@@ -498,7 +505,6 @@ while not board.is_game_over():
         save_last_play()  # Save the last played move
 
     else:
-        print("Entering normal mode...")
         move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
         print(Fore.CYAN + "Moving to bin position...")
 
@@ -546,8 +552,6 @@ while not board.is_game_over():
 
             display_board()  # Update the board svg
 
-            save_last_play()  # Save the last played move
-
             stockfish.set_fen_position(board.fen())  # Set the position of the board
             bestMove = stockfish.get_top_moves(1)  # Get the best move
             uci_format_bestMove = chess.Move.from_uci(bestMove[0]["Move"])
@@ -555,7 +559,6 @@ while not board.is_game_over():
             origin_square = uci_format_bestMove.from_square
             if board.is_kingside_castling(uci_format_bestMove):
                 print("Stockfish is castling kingside")
-                save_last_play()  # Save the last played move
                 direct_move_piece(
                     "e8",
                     "g8",
@@ -568,9 +571,9 @@ while not board.is_game_over():
                     piece_heights["R"] + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
+                save_last_play()  # Save the last played move
             elif board.is_queenside_castling(uci_format_bestMove):
                 print("Stockfish is castling queenside")
-                save_last_play()
                 direct_move_piece(
                     "e8",
                     "c8",
@@ -583,6 +586,7 @@ while not board.is_game_over():
                     piece_heights["R"] + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
+                save_last_play()  # Save the last played move
 
             else:
                 print("Stockfish is not castling")
@@ -600,13 +604,13 @@ while not board.is_game_over():
                     from_piece_type = board.piece_at(chess.parse_square(move_from))
                     to_piece_type = board.piece_at(chess.parse_square(move_to))
                     to_position_height = piece_heights[from_piece_type.symbol()]
-                    save_last_play()  # Save the last played move
                     direct_move_piece(
                         from_position,
                         to_position,
                         to_position_height + BOARD_HEIGHT,
                         LIFT_HEIGHT,
                     )
+                    save_last_play()  # Save the last played move
 
                 else:
                     print(
@@ -626,7 +630,6 @@ while not board.is_game_over():
                     to_piece_type = board.piece_at(chess.parse_square(move_to))
                     to_position_height = piece_heights[to_piece_type.symbol()]
                     from_position_height = piece_heights[from_piece_type.symbol()]
-                    save_last_play()  # Save the last played move
                     remove_piece(
                         to_position, to_position_height + BOARD_HEIGHT, LIFT_HEIGHT
                     )
@@ -636,6 +639,7 @@ while not board.is_game_over():
                         from_position_height + BOARD_HEIGHT,
                         LIFT_HEIGHT,
                     )
+                    save_last_play()  # Save the last played move
 
             print(
                 Fore.GREEN + "Stockfish moves:", board.push_san(bestMove[0]["Move"])
