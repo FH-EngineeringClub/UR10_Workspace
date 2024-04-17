@@ -1,3 +1,8 @@
+"""
+This file is to help with setting up the chess board before running the chess game.
+Clear the chess board, and use this file to move the robot to each square on the board.
+"""
+
 from time import sleep
 import socket
 import json
@@ -44,6 +49,9 @@ def translate(x, y):
 
 
 def move_to_square(pos, height):
+    """
+    Move the TCP to a given position on the chess board
+    """
     robot_position = translate(pos["x"], pos["y"])
     control_interface.moveL(
         [
@@ -60,6 +68,9 @@ def move_to_square(pos, height):
 
 
 def lift_piece(pos):
+    """
+    Lift the piece from the board
+    """
     robot_position = translate(pos["x"], pos["y"])
     control_interface.moveL(
         [
@@ -76,6 +87,9 @@ def lift_piece(pos):
 
 
 def lower_piece(pos):
+    """
+    Lower the piece to the board
+    """
     robot_position = translate(pos["x"], pos["y"])
     control_interface.moveL(
         [
@@ -92,6 +106,9 @@ def lower_piece(pos):
 
 
 def send_command_to_robot(command):
+    """
+    Send a command to the robot directly using a socket connection
+    """
     # Connect to the robot
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.connect((HOSTNAME, HOST_PORT))
@@ -130,6 +147,9 @@ to_position = data[move_to]
 
 
 def direct_move_piece(from_pos, to_pos, board_height, lift_height):
+    """
+    Directly move a piece from one position to another on the chess board
+    """
     print("Moving piece from", move_from, "to", move_to)
     move_to_square(from_pos, board_height)
     print("Energizing electromagnet...")
