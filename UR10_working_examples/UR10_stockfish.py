@@ -19,7 +19,7 @@ import chess.polyglot
 from stockfish import Stockfish
 from colorama import Fore
 
-HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 RTDE_FREQUENCY = 10  # Hz to update data from robot
 
@@ -306,12 +306,12 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
         "Moving piece", board.piece_at(origin_square), "from", move_from, "to", move_to
     )
     move_to_square(from_pos, lift_height)
+    print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
+    send_command_to_robot(OUTPUT_24)  # energize the electromagnet
     move_to_square(from_pos, board_height)
     print(Fore.CYAN + "Lowering TCP...")
     sleep(0.2)
     forcemode_lower()
-    print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
-    send_command_to_robot(OUTPUT_24)  # energize the electromagnet
     print(Fore.CYAN + "Lifting piece...")
     lift_piece(from_pos)
     print("Moving piece to", move_to)
@@ -331,12 +331,12 @@ def remove_piece(from_pos, board_height, lift_height):
     """
     print("Removing piece", board.piece_at(target_square), "from", move_from)
     move_to_square(from_pos, lift_height)
+    print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
+    send_command_to_robot(OUTPUT_24)  # energize the electromagnet
     move_to_square(from_pos, board_height)
     print(Fore.CYAN + "Lowering TCP...")
     sleep(0.2)
     forcemode_lower()
-    print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
-    send_command_to_robot(OUTPUT_24)  # energize the electromagnet
     print(Fore.CYAN + "Lifting piece...")
     move_to_square(from_pos, lift_height)
     lift_piece(from_pos)
@@ -604,31 +604,81 @@ while not board.is_game_over():
             origin_square = uci_format_bestMove.from_square
             if board.is_kingside_castling(uci_format_bestMove):
                 print("Stockfish is castling kingside")
+                if board.turn == chess.WHITE:
+                    move = "e1g1"  # e.g. "e2e4" or "e7e5"
+                else:
+                    move = "e8g8"  # e.g. "e2e4" or "e7e5"
+                REMOVING_PIECE = 0
+                move_from = move[:2]  # from square
+                move_to = move[-2:]  # to square
+                print(move_from, move_to)
+                from_position = data[move_from]
+                to_position = data[move_to]
+                from_piece_type = board.piece_at(chess.parse_square(move_from))
+                to_piece_type = board.piece_at(chess.parse_square(move_to))
+                to_position_height = piece_heights[from_piece_type.symbol()]
                 direct_move_piece(
-                    "e8",
-                    "g8",
-                    piece_heights["K"] + BOARD_HEIGHT,  # add king height here
+                    from_position,
+                    to_position,
+                    to_position_height + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
+                if board.turn == chess.WHITE:
+                    move = "h1f1"  # e.g. "e2e4" or "e7e5"
+                else:
+                    move = "h8f8"  # e.g. "e2e4" or "e7e5"
+                move_from = move[:2]  # from square
+                move_to = move[-2:]  # to square
+                print(move_from, move_to)
+                from_position = data[move_from]
+                to_position = data[move_to]
+                from_piece_type = board.piece_at(chess.parse_square(move_from))
+                to_piece_type = board.piece_at(chess.parse_square(move_to))
+                to_position_height = piece_heights[from_piece_type.symbol()]
                 direct_move_piece(
-                    "h8",
-                    "f8",
-                    piece_heights["R"] + BOARD_HEIGHT,
+                    from_position,
+                    to_position,
+                    to_position_height + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
                 save_last_play()  # Save the last played move
             elif board.is_queenside_castling(uci_format_bestMove):
                 print("Stockfish is castling queenside")
+                if board.turn == chess.WHITE:
+                    move = "e1c1"  # e.g. "e2e4" or "e7e5"
+                else:
+                    move = "e8c8"  # e.g. "e2e4" or "e7e5"
+                REMOVING_PIECE = 0
+                move_from = move[:2]  # from square
+                move_to = move[-2:]  # to square
+                print(move_from, move_to)
+                from_position = data[move_from]
+                to_position = data[move_to]
+                from_piece_type = board.piece_at(chess.parse_square(move_from))
+                to_piece_type = board.piece_at(chess.parse_square(move_to))
+                to_position_height = piece_heights[from_piece_type.symbol()]
                 direct_move_piece(
-                    "e8",
-                    "c8",
-                    piece_heights["K"] + BOARD_HEIGHT,  # add king height here
+                    from_position,
+                    to_position,
+                    to_position_height + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
+                if board.turn == chess.WHITE:
+                    move = "a1d1"  # e.g. "e2e4" or "e7e5"
+                else:
+                    move = "a8d8"  # e.g. "e2e4" or "e7e5"
+                move_from = move[:2]  # from square
+                move_to = move[-2:]  # to square
+                print(move_from, move_to)
+                from_position = data[move_from]
+                to_position = data[move_to]
+                from_piece_type = board.piece_at(chess.parse_square(move_from))
+                to_piece_type = board.piece_at(chess.parse_square(move_to))
+                to_position_height = piece_heights[from_piece_type.symbol()]
                 direct_move_piece(
-                    "a8",
-                    "d8",
-                    piece_heights["R"] + BOARD_HEIGHT,
+                    from_position,
+                    to_position,
+                    to_position_height + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
                 save_last_play()  # Save the last played move
