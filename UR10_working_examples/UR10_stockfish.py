@@ -17,6 +17,7 @@ import chess.svg
 import chess.engine
 import chess.polyglot
 from stockfish import Stockfish
+from stockfish import StockfishException
 from colorama import Fore
 
 HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
@@ -362,17 +363,30 @@ if zero_player_mode == "TRUE":
     stockfish.set_elo_rating(random_number)
 else:
     difficulty = input("Enter the difficulty level (easy, medium, expert, gm): ")
-    elo_rating = stockfish_difficulty_level.get(difficulty)
-    if elo_rating is None:
-        print("Invalid difficulty level")
-        exit()
-    stockfish.set_elo_rating(elo_rating)
-    print(
-        Fore.GREEN + "Difficulty level set to",
-        difficulty,
-        "with ELO rating",
-        elo_rating,
-    )
+    if difficulty == "":
+        difficulty = "easy"
+        elo_rating = stockfish_difficulty_level.get(difficulty)
+        stockfish.set_elo_rating(stockfish_difficulty_level.get(difficulty))
+        print(
+            Fore.GREEN + "Difficulty level set to",
+            difficulty,
+            "with ELO rating",
+            elo_rating,
+        )
+    else:
+        try:
+            elo_rating = stockfish_difficulty_level.get(difficulty)
+            stockfish.set_elo_rating(elo_rating)
+            print(
+                Fore.GREEN + "Difficulty level set to",
+                difficulty,
+                "with ELO rating",
+                elo_rating,
+            )
+        except StockfishException:
+            print(Fore.RED + "Invalid difficulty level")
+            exit()
+
 
 while not board.is_game_over():
     if zero_player_mode == "TRUE":
