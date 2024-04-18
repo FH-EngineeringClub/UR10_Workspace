@@ -557,7 +557,7 @@ while not board.is_game_over():
         print(Fore.WHITE + "Legal moves:")
 
         for move in (
-            board.pseudo_legal_moves
+            board.legal_moves
         ):  # Print all the legal moves, including castling, en passant, and captures
             if board.is_castling(move):
                 print(Fore.LIGHTRED_EX + "Castling " + move.uci(), end=" ")
@@ -600,7 +600,7 @@ while not board.is_game_over():
         else:
             try:
                 valid_move = (
-                    chess.Move.from_uci(inputmove) in board.pseudo_legal_moves
+                    chess.Move.from_uci(inputmove) in board.legal_moves
                 )  # Check if the move is valid
             except ValueError:
                 print(Fore.RED + "Move is not in SAN format. Please try again.")
