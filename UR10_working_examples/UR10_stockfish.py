@@ -44,8 +44,8 @@ TCP_RZ = -0.0416  # rz (z rotation of TCP in radians)
 
 BIN_POSITION = {"x": 202.8, "y": -254.93}  # position to move to when not in use
 
-MOVE_SPEED = 0.5  # speed of the tool [m/s]
-MOVE_ACCEL = 0.3  # acceleration of the tool [m/s^2]
+MOVE_SPEED = 1  # speed of the tool [m/s]
+MOVE_ACCEL = 1  # acceleration of the tool [m/s^2]
 
 FORCE_SECONDS = 2  # duration of the force mode in seconds
 
