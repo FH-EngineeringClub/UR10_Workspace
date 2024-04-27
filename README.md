@@ -1,10 +1,12 @@
-# UR10 Workspace
+# UR10 Chess Robot
 
-Collection of python scripts to test stockfish, python-chess, and ur_rtde.
+Project by the Foothill Engineering club to play chess against a Universal Robots UR10.
 
 `UR10_working_examples` hosts the currently working files used to run the UR10.
 
 See our [project Notion site](https://splendid-eel-64f.notion.site/UR10-Chess-Robot-eca1ce190f8b4982b52d836f1d4e0b59) for more information.
+
+![Photo of the UR10 chess robot](/assets/images/UR10_4_26_24.jpg)
 
 ## Requirements
 
