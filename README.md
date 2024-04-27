@@ -2,47 +2,69 @@
 
 Collection of python scripts to test stockfish, python-chess, and ur_rtde.
 
-## Requirements
-
-- [stockfish](https://pypi.org/project/stockfish/), [python-chess](https://pypi.org/project/chess/), and [ur_rtde](https://pypi.org/project/ur-rtde/)
-  - Installable with `pip install -r requirements.txt`
-  - ur_rtde requires additional setup for installation, see [ur_rtde Installation](#ur_rtde-installation) for details
-- Install the stockfish binary with `brew install stockfish` on macOS or by downloading [here](https://stockfishchess.org/download/) on windows
-
-  - It may be helpful to add [stockfish to PATH](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53) on windows
-  - For linux, download the latest 64-bit version of stockfish [here](https://stockfishchess.org/download/linux/), open with `tar -xvf stockfish-ubuntu-x86-64.tar`, and place the binary in path with `mv stockfish-ubuntu-x86-64 /usr/bin/stockfish`
-
-- Install [svg preview for VS code](https://marketplace.visualstudio.com/items?itemName=jock.svg)
-
-## [ur_rtde Installation](https://sdurobotics.gitlab.io/ur_rtde/installation/installation.html)
-
-### Windows
-
-[Install boost](https://www.geeksforgeeks.org/how-to-install-c-boost-libraries-on-windows/)  
-[Install cmake](https://cmake.org/download/)  
-`pip install ur-rtde`
-
-### MacOS
-
-`brew install cmake`  
-`brew install boost`  
-`pip install ur-rtde --use-pep517`
-
-### Linux
-
-_(Ubuntu 22.04 recommended for compatibility)_:  
-`sudo apt-get install libboost-all-dev`  
-`sudo add-apt-repository ppa:sdurobotics/ur-rtde`  
-`sudo apt-get update`  
-`sudo apt install librtde librtde-dev`  
-`sudo apt install cmake`  
-`pip install ur-rtde --use-pep517`
+`UR10_working_examples` hosts the currently working files used to run the UR10.
 
 ## Instructions
 
 - Preview chess.svg in VS code
 
-- Run python_chess.py and input your move in SAN format (e.g. a2a4 or e2e4)
+- Confirm the robot IP listed in UR10_working_examples/UR10_stockfish.py
+
+- Run UR10_stockfish.py and input your move in SAN format (e.g. b2b4 or e2e4)
+
+## Requirements
+
+- Python 3.9 or 3.10 (3.10 recommended)
+
+- [stockfish](https://pypi.org/project/stockfish/), [python-chess](https://pypi.org/project/chess/), [colorama](https://pypi.org/project/colorama/) and [ur_rtde](https://pypi.org/project/ur-rtde/)
+
+  - Installable with `pip install -r requirements.txt`
+  - ur_rtde and stockfish require additional steps for installation, see [Setup](#setup) for details
+
+- Stockfish [executable](#setup)
+
+- [Svg preview for VS code](https://marketplace.visualstudio.com/items?itemName=jock.svg)
+
+### MacOS specific
+
+- [Homebrew](https://brew.sh/)
+
+## Setup
+
+[Stockfish](https://stockfishchess.org/download/)
+
+[ur_rtde (MacOS or Linux recommended)](https://sdurobotics.gitlab.io/ur_rtde/installation/installation.html)
+
+### MacOS
+
+`brew install stockfish`
+
+`brew install cmake`  
+`brew install boost`  
+If `pip install -r requirements.txt` does not correctly install ur_rtde, run `pip install ur-rtde --use-pep517`
+
+### Linux _(Ubuntu 22.04 recommended)_
+
+Download the latest 64-bit version of stockfish [here](https://stockfishchess.org/download/linux/)
+`tar -xvf stockfish-ubuntu-x86-64.tar`  
+Add to path: `mv stockfish-ubuntu-x86-64 /usr/bin/stockfish`
+
+`sudo apt-get install libboost-all-dev`  
+`sudo apt install cmake`  
+`sudo add-apt-repository ppa:sdurobotics/ur-rtde`  
+`sudo apt-get update`  
+`sudo apt install librtde librtde-dev`  
+If `pip install -r requirements.txt` does not correctly install ur_rtde, run `pip install ur-rtde --use-pep517`
+
+### Windows
+
+Download stockfish [here](https://stockfishchess.org/download/)
+
+- It may be helpful to add [stockfish to PATH](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53)
+
+[Install boost](https://www.geeksforgeeks.org/how-to-install-c-boost-libraries-on-windows/)  
+[Install cmake](https://cmake.org/download/)  
+`pip install -r requirements.txt`
 
 ## Resources
 
@@ -56,4 +78,4 @@ _(Ubuntu 22.04 recommended for compatibility)_:
 
 [Stockfish and python-chess tutorial](https://github.com/rogerfitz/tutorials/blob/master/python_chess/0_Chess_Basics.ipynb)
 
-[chess elo levels](https://en.wikipedia.org/wiki/Chess_rating_system)
+[Chess elo levels](https://en.wikipedia.org/wiki/Chess_rating_system)
