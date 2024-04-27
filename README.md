@@ -4,13 +4,7 @@ Collection of python scripts to test stockfish, python-chess, and ur_rtde.
 
 `UR10_working_examples` hosts the currently working files used to run the UR10.
 
-## Instructions
-
-- Preview chess.svg in VS code
-
-- Confirm the robot IP listed in UR10_working_examples/UR10_stockfish.py
-
-- Run UR10_stockfish.py and input your move in SAN format (e.g. b2b4 or e2e4)
+See our [project Notion site](https://splendid-eel-64f.notion.site/UR10-Chess-Robot-eca1ce190f8b4982b52d836f1d4e0b59) for more information.
 
 ## Requirements
 
@@ -28,6 +22,14 @@ Collection of python scripts to test stockfish, python-chess, and ur_rtde.
 ### MacOS specific
 
 - [Homebrew](https://brew.sh/)
+
+## Instructions
+
+- Preview chess.svg in VS code
+
+- Confirm the robot IP listed in UR10_working_examples/UR10_stockfish.py
+
+- Run UR10_stockfish.py and input your move in SAN format (e.g. b2b4 or e2e4)
 
 ## Setup
 
