@@ -208,17 +208,18 @@ def lift_piece(pos):
     sleep(0.5)
 
 
-def lower_piece(pos):
+def lower_piece(move_pos):
     """
     Lower the piece to the board
     """
-    robot_position = translate(pos["x"], pos["y"])
+    robot_position = translate(move_pos.to_pos["x"], move_pos.to_pos["y"])
     if REMOVING_PIECE == 1:
         control_interface.moveL(
             [
                 robot_position[0] / 1000,  # x
                 robot_position[1] / 1000,  # y
-                from_position_height + BOARD_HEIGHT,  # z (height to lift piece)
+                move_pos.from_position_height
+                + BOARD_HEIGHT,  # z (height to lift piece)
                 TCP_RX,  # rx (x rotation of TCP in radians)
                 TCP_RY,  # ry (y rotation of TCP in radians)
                 TCP_RZ,  # rz (z rotation of TCP in radians)
@@ -231,7 +232,7 @@ def lower_piece(pos):
             [
                 robot_position[0] / 1000,  # x
                 robot_position[1] / 1000,  # y
-                to_position_height + BOARD_HEIGHT,  # z (height to lift piece)
+                move_pos.to_position_height + BOARD_HEIGHT,  # z (height to lift piece)
                 TCP_RX,  # rx (x rotation of TCP in radians)
                 TCP_RY,  # ry (y rotation of TCP in radians)
                 TCP_RZ,  # rz (z rotation of TCP in radians)
@@ -299,48 +300,53 @@ f = open("setup.json", encoding="utf-8")
 data = json.load(f)
 
 
-def direct_move_piece(from_pos, to_pos, board_height, lift_height):
+def direct_move_piece(move_pos, board_height, lift_height):
     """
     Directly move a piece from one position to another on the chess board
     """
     print(
-        "Moving piece", board.piece_at(origin_square), "from", move_from, "to", move_to
+        "Moving piece",
+        board.piece_at(origin_square),
+        "from",
+        move_pos.move_from,
+        "to",
+        move_pos.move_to,
     )
-    move_to_square(from_pos, lift_height)
+    move_to_square(move_pos.from_pos, lift_height)
     print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
-    move_to_square(from_pos, board_height)
+    move_to_square(move_pos.from_pos, board_height)
     print(Fore.CYAN + "Lowering TCP...")
     sleep(0.2)
     forcemode_lower()
     print(Fore.CYAN + "Lifting piece...")
-    lift_piece(from_pos)
-    print("Moving piece to", move_to)
-    move_to_square(to_pos, lift_height)
+    lift_piece(move_pos.from_pos)
+    print("Moving piece to", move_pos.move_to)
+    move_to_square(move_pos.to_pos, lift_height)
     print("Lowering piece...")
-    lower_piece(to_pos)
+    lower_piece(move_pos)
     print(Fore.LIGHTBLUE_EX + "De-energizing electromagnet...")
     send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
     sleep(1)
-    move_to_square(to_pos, lift_height)
+    move_to_square(move_pos.to_pos, lift_height)
     print(Fore.CYAN + "Piece moved successfully!")
 
 
-def remove_piece(from_pos, board_height, lift_height):
+def remove_piece(move_pos, board_height, lift_height):
     """
     Remove a piece from the chess board
     """
-    print("Removing piece", board.piece_at(target_square), "from", move_from)
-    move_to_square(from_pos, lift_height)
+    print("Removing piece", board.piece_at(target_square), "from", move_pos.move_from)
+    move_to_square(move_pos.from_pos, lift_height)
     print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
-    move_to_square(from_pos, board_height)
+    move_to_square(move_pos.from_pos, board_height)
     print(Fore.CYAN + "Lowering TCP...")
     sleep(0.2)
     forcemode_lower()
     print(Fore.CYAN + "Lifting piece...")
-    move_to_square(from_pos, lift_height)
-    lift_piece(from_pos)
+    move_to_square(move_pos.from_pos, lift_height)
+    lift_piece(move_pos.from_pos)
     print("Moving piece to ex")
     move_to_square(BIN_POSITION, lift_height)  # move to the side position
     print(Fore.LIGHTBLUE_EX + "De-energizing electromagnet...")
@@ -388,6 +394,50 @@ else:
             exit()
 
 
+class Move:
+    def __init__(
+        self,
+        from_position,
+        to_position,
+        from_position_height,
+        to_position_height,
+        to_piece_type,
+        move_from,
+        move_to,
+    ):
+        self.from_pos = from_position
+        self.to_pos = to_position
+        self.from_position_height = from_position_height
+        self.to_position_height = to_position_height
+        self.to_piece_type = to_piece_type
+        self.move_from = move_from
+        self.move_to = move_to
+
+
+def compute_move_pos(piece_heights, board, data, move):
+    move_from = move[:2]  # from square
+    move_to = move[-2:]  # to square
+    print(move_from, move_to)
+    from_position = data[move_from]
+    to_position = data[move_to]
+    from_piece_type = board.piece_at(chess.parse_square(move_from))
+    to_piece_type = board.piece_at(chess.parse_square(move_to))
+    print(from_piece_type, to_piece_type)
+    if to_piece_type is None:
+        to_piece_type = from_piece_type
+    to_position_height = piece_heights[to_piece_type.symbol()]
+    from_position_height = piece_heights[from_piece_type.symbol()]
+    return Move(
+        from_position,
+        to_position,
+        from_position_height,
+        to_position_height,
+        to_piece_type,
+        move_from,
+        move_to,
+    )
+
+
 while not board.is_game_over():
     if zero_player_mode == "TRUE":
         move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
@@ -408,36 +458,20 @@ while not board.is_game_over():
             else:
                 move = "e8g8"  # e.g. "e2e4" or "e7e5"
             REMOVING_PIECE = 0
-            move_from = move[:2]  # from square
-            move_to = move[-2:]  # to square
-            print(move_from, move_to)
-            from_position = data[move_from]
-            to_position = data[move_to]
-            from_piece_type = board.piece_at(chess.parse_square(move_from))
-            to_piece_type = board.piece_at(chess.parse_square(move_to))
-            to_position_height = piece_heights[from_piece_type.symbol()]
+            move_pos = compute_move_pos(piece_heights, board, data, move)
             direct_move_piece(
-                from_position,
-                to_position,
-                to_position_height + BOARD_HEIGHT,
+                move_pos,
+                move_pos.to_position_height + BOARD_HEIGHT,
                 LIFT_HEIGHT,
             )
             if board.turn == chess.WHITE:
                 move = "h1f1"  # e.g. "e2e4" or "e7e5"
             else:
                 move = "h8f8"  # e.g. "e2e4" or "e7e5"
-            move_from = move[:2]  # from square
-            move_to = move[-2:]  # to square
-            print(move_from, move_to)
-            from_position = data[move_from]
-            to_position = data[move_to]
-            from_piece_type = board.piece_at(chess.parse_square(move_from))
-            to_piece_type = board.piece_at(chess.parse_square(move_to))
-            to_position_height = piece_heights[from_piece_type.symbol()]
+            move_pos = compute_move_pos(piece_heights, board, data, move)
             direct_move_piece(
-                from_position,
-                to_position,
-                to_position_height + BOARD_HEIGHT,
+                move_pos,
+                move_pos.to_position_height + BOARD_HEIGHT,
                 LIFT_HEIGHT,
             )
             save_last_play()  # Save the last played move
@@ -448,36 +482,20 @@ while not board.is_game_over():
             else:
                 move = "e8c8"  # e.g. "e2e4" or "e7e5"
             REMOVING_PIECE = 0
-            move_from = move[:2]  # from square
-            move_to = move[-2:]  # to square
-            print(move_from, move_to)
-            from_position = data[move_from]
-            to_position = data[move_to]
-            from_piece_type = board.piece_at(chess.parse_square(move_from))
-            to_piece_type = board.piece_at(chess.parse_square(move_to))
-            to_position_height = piece_heights[from_piece_type.symbol()]
+            move_pos = compute_move_pos(piece_heights, board, data, move)
             direct_move_piece(
-                from_position,
-                to_position,
-                to_position_height + BOARD_HEIGHT,
+                move_pos,
+                move_pos.to_position_height + BOARD_HEIGHT,
                 LIFT_HEIGHT,
             )
             if board.turn == chess.WHITE:
                 move = "a1d1"  # e.g. "e2e4" or "e7e5"
             else:
                 move = "a8d8"  # e.g. "e2e4" or "e7e5"
-            move_from = move[:2]  # from square
-            move_to = move[-2:]  # to square
-            print(move_from, move_to)
-            from_position = data[move_from]
-            to_position = data[move_to]
-            from_piece_type = board.piece_at(chess.parse_square(move_from))
-            to_piece_type = board.piece_at(chess.parse_square(move_to))
-            to_position_height = piece_heights[from_piece_type.symbol()]
+            move_pos = compute_move_pos(piece_heights, board, data, move)
             direct_move_piece(
-                from_position,
-                to_position,
-                to_position_height + BOARD_HEIGHT,
+                move_pos,
+                move_pos.to_position_height + BOARD_HEIGHT,
                 LIFT_HEIGHT,
             )
             save_last_play()  # Save the last played move
@@ -490,18 +508,10 @@ while not board.is_game_over():
                 REMOVING_PIECE = 0
 
                 move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-                move_from = move[:2]  # from square
-                move_to = move[-2:]  # to square
-                print(move_from, move_to)
-                from_position = data[move_from]
-                to_position = data[move_to]
-                from_piece_type = board.piece_at(chess.parse_square(move_from))
-                to_piece_type = board.piece_at(chess.parse_square(move_to))
-                to_position_height = piece_heights[from_piece_type.symbol()]
+                move_pos = compute_move_pos(piece_heights, board, data, move)
                 direct_move_piece(
-                    from_position,
-                    to_position,
-                    to_position_height + BOARD_HEIGHT,
+                    move_pos,
+                    move_pos.to_position_height + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
                 save_last_play()  # Save the last played move
@@ -515,22 +525,15 @@ while not board.is_game_over():
                 REMOVING_PIECE = 1
 
                 move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-                move_from = move[:2]  # from square
-                move_to = move[-2:]  # to square
-                print(move_from, move_to)
-                from_position = data[move_from]
-                to_position = data[move_to]
-                from_piece_type = board.piece_at(chess.parse_square(move_from))
-                to_piece_type = board.piece_at(chess.parse_square(move_to))
-                to_position_height = piece_heights[to_piece_type.symbol()]
-                from_position_height = piece_heights[from_piece_type.symbol()]
+                move_pos = compute_move_pos(piece_heights, board, data, move)
                 remove_piece(
-                    to_position, to_position_height + BOARD_HEIGHT, LIFT_HEIGHT
+                    move_pos,
+                    move_pos.to_position_height + BOARD_HEIGHT,
+                    LIFT_HEIGHT,
                 )
                 direct_move_piece(
-                    from_position,
-                    to_position,
-                    from_position_height + BOARD_HEIGHT,
+                    move_pos,
+                    move_pos.from_position_height + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
                 save_last_play()  # Save the last played move
@@ -623,36 +626,22 @@ while not board.is_game_over():
                 else:
                     move = "e8g8"  # e.g. "e2e4" or "e7e5"
                 REMOVING_PIECE = 0
-                move_from = move[:2]  # from square
-                move_to = move[-2:]  # to square
-                print(move_from, move_to)
-                from_position = data[move_from]
-                to_position = data[move_to]
-                from_piece_type = board.piece_at(chess.parse_square(move_from))
-                to_piece_type = board.piece_at(chess.parse_square(move_to))
-                to_position_height = piece_heights[from_piece_type.symbol()]
+                move_pos = compute_move_pos(piece_heights, board, data, move)
+
                 direct_move_piece(
-                    from_position,
-                    to_position,
-                    to_position_height + BOARD_HEIGHT,
+                    move_pos,
+                    move_pos.to_position_height + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
                 if board.turn == chess.WHITE:
                     move = "h1f1"  # e.g. "e2e4" or "e7e5"
                 else:
                     move = "h8f8"  # e.g. "e2e4" or "e7e5"
-                move_from = move[:2]  # from square
-                move_to = move[-2:]  # to square
-                print(move_from, move_to)
-                from_position = data[move_from]
-                to_position = data[move_to]
-                from_piece_type = board.piece_at(chess.parse_square(move_from))
-                to_piece_type = board.piece_at(chess.parse_square(move_to))
-                to_position_height = piece_heights[from_piece_type.symbol()]
+                move_pos = compute_move_pos(piece_heights, board, data, move)
+
                 direct_move_piece(
-                    from_position,
-                    to_position,
-                    to_position_height + BOARD_HEIGHT,
+                    move_pos,
+                    move_pos.to_position_height + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
                 save_last_play()  # Save the last played move
@@ -663,36 +652,20 @@ while not board.is_game_over():
                 else:
                     move = "e8c8"  # e.g. "e2e4" or "e7e5"
                 REMOVING_PIECE = 0
-                move_from = move[:2]  # from square
-                move_to = move[-2:]  # to square
-                print(move_from, move_to)
-                from_position = data[move_from]
-                to_position = data[move_to]
-                from_piece_type = board.piece_at(chess.parse_square(move_from))
-                to_piece_type = board.piece_at(chess.parse_square(move_to))
-                to_position_height = piece_heights[from_piece_type.symbol()]
+                move_pos = compute_move_pos(piece_heights, board, data, move)
                 direct_move_piece(
-                    from_position,
-                    to_position,
-                    to_position_height + BOARD_HEIGHT,
+                    move_pos,
+                    move_pos.to_position_height + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
                 if board.turn == chess.WHITE:
                     move = "a1d1"  # e.g. "e2e4" or "e7e5"
                 else:
                     move = "a8d8"  # e.g. "e2e4" or "e7e5"
-                move_from = move[:2]  # from square
-                move_to = move[-2:]  # to square
-                print(move_from, move_to)
-                from_position = data[move_from]
-                to_position = data[move_to]
-                from_piece_type = board.piece_at(chess.parse_square(move_from))
-                to_piece_type = board.piece_at(chess.parse_square(move_to))
-                to_position_height = piece_heights[from_piece_type.symbol()]
+                move_pos = compute_move_pos(piece_heights, board, data, move)
                 direct_move_piece(
-                    from_position,
-                    to_position,
-                    to_position_height + BOARD_HEIGHT,
+                    move_pos,
+                    move_pos.to_position_height + BOARD_HEIGHT,
                     LIFT_HEIGHT,
                 )
                 save_last_play()  # Save the last played move
@@ -705,18 +678,10 @@ while not board.is_game_over():
                     REMOVING_PIECE = 0
 
                     move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-                    move_from = move[:2]  # from square
-                    move_to = move[-2:]  # to square
-                    print(move_from, move_to)
-                    from_position = data[move_from]
-                    to_position = data[move_to]
-                    from_piece_type = board.piece_at(chess.parse_square(move_from))
-                    to_piece_type = board.piece_at(chess.parse_square(move_to))
-                    to_position_height = piece_heights[from_piece_type.symbol()]
+                    move_pos = compute_move_pos(piece_heights, board, data, move)
                     direct_move_piece(
-                        from_position,
-                        to_position,
-                        to_position_height + BOARD_HEIGHT,
+                        move_pos,
+                        move_pos.to_position_height + BOARD_HEIGHT,
                         LIFT_HEIGHT,
                     )
                     save_last_play()  # Save the last played move
@@ -730,22 +695,15 @@ while not board.is_game_over():
                     REMOVING_PIECE = 1
 
                     move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-                    move_from = move[:2]  # from square
-                    move_to = move[-2:]  # to square
-                    print(move_from, move_to)
-                    from_position = data[move_from]
-                    to_position = data[move_to]
-                    from_piece_type = board.piece_at(chess.parse_square(move_from))
-                    to_piece_type = board.piece_at(chess.parse_square(move_to))
-                    to_position_height = piece_heights[to_piece_type.symbol()]
-                    from_position_height = piece_heights[from_piece_type.symbol()]
+                    move_pos = compute_move_pos(piece_heights, board, data, move)
                     remove_piece(
-                        to_position, to_position_height + BOARD_HEIGHT, LIFT_HEIGHT
+                        move_pos,
+                        move_pos.to_position_height + BOARD_HEIGHT,
+                        LIFT_HEIGHT,
                     )
                     direct_move_piece(
-                        from_position,
-                        to_position,
-                        from_position_height + BOARD_HEIGHT,
+                        move_pos,
+                        move_pos.from_position_height + BOARD_HEIGHT,
                         LIFT_HEIGHT,
                     )
                     save_last_play()  # Save the last played move
