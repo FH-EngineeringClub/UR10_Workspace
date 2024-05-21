@@ -16,7 +16,7 @@ class ChessViz:
 
         # takes picture and determines resolution width and height
         # from picture dimensions
-        cam = cv2.VideoCapture(cam_index)
+        cam = cv2.VideoCapture(cam_index, cv2.CAP_DSHOW)
         ret, image = cam.read() 
         self.resolution_width = image.shape[1]
         self.resolution_height = image.shape[0] 
@@ -43,7 +43,7 @@ class ChessViz:
     # Uses tkinter gui to help dev find crop parameters, i.e. crop origin, 
     # crop width, and crop height
     def crop_gui(self):
-        cap = cv2.VideoCapture(self.cam_index)
+        cap = cv2.VideoCapture(self.cam_index, cv2.CAP_DSHOW)
 
         root = Tk()
         root.bind('<Escape>', lambda e: root.quit())
@@ -100,16 +100,16 @@ class ChessViz:
 
         cap.release()
             
-    # Returns a cropped image based off class variables
-    # input: null
-    # output: numpy array of shape (crop height, crop width)
     def get_image(self):
-        cam = cv2.VideoCapture(self.cam_index)
+        cam = cv2.VideoCapture(self.cam_index, cv2.CAP_DSHOW)
         result, image = cam.read()
         cam.release()
         if not result: 
             raise "Error taking image"
         
+        return image
+    
+    def get_chessboard(self, image):
         cropped_image = image[self.crop_origin[0]:(self.crop_origin[0] + self.crop_height), 
                             self.crop_origin[1]:(self.crop_origin[1] + self.crop_width)]
         
@@ -189,3 +189,76 @@ class ChessViz:
         vectorized_func = np.vectorize(self.__calculate_contrast)
         contrast_values = vectorized_func(squares_array)
         print(contrast_values)
+        
+    def get_centers(self, corners):
+        top_left, top_right, bottom_right, bottom_left = corners
+    
+    def get_chess_array(self, centers, ids, chess_image):
+        pass
+    
+    def resize_image(self, image, factor):
+        # Get the original image dimensions
+        h, w = image.shape[:2]
+        return cv2.resize(image, (round(factor * w), round(factor * h)))
+
+    def test_aruco_detection(self):
+        cap = cv2.VideoCapture(self.cam_index, cv2.CAP_DSHOW)
+        total = 0
+        detected = 0
+        aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+
+        while(cap.isOpened()):
+            ret, frame = cap.read()
+            frame = self.get_chessboard(frame) 
+            frame = self.resize_image(frame, 1)
+            total += 1
+            # Detect ArUco markers in the video frame
+            (corners, ids, rejected) = cv2.aruco.detectMarkers(frame, aruco_dict)
+            # Check that at least one ArUco marker was detected
+            if len(corners) > 0:
+                if len(corners) == 32:
+                    detected += 1
+                    
+                # Flatten the ArUco IDs list
+                # ids = ids.flatten()
+                # # Loop over the detected ArUco corners
+                for (marker_corner, marker_id) in zip(corners, ids):
+            
+                    # Extract the marker corners
+                    corners = marker_corner.reshape((4, 2))
+                    (top_left, top_right, bottom_right, bottom_left) = corners
+                    
+                    # Convert the (x,y) coordinate pairs to integers
+                    top_right = (int(top_right[0]), int(top_right[1]))
+                    bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
+                    bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
+                    top_left = (int(top_left[0]), int(top_left[1]))
+                    
+                    # Draw the bounding box of the ArUco detection
+                    cv2.line(frame, top_left, top_right, (0, 255, 0), 2)
+                    cv2.line(frame, top_right, bottom_right, (0, 255, 0), 2)
+                    cv2.line(frame, bottom_right, bottom_left, (0, 255, 0), 2)
+                    cv2.line(frame, bottom_left, top_left, (0, 255, 0), 2)
+                    
+                    # Calculate and draw the center of the ArUco marker
+                    center_x = int((top_left[0] + bottom_right[0]) / 2.0)
+                    center_y = int((top_left[1] + bottom_right[1]) / 2.0)
+                    cv2.circle(frame, (center_x, center_y), 4, (0, 0, 255), -1)
+                    
+                    # Draw the ArUco marker ID on the video frame
+                    # The ID is always located at the top_left of the ArUco marker
+                    cv2.putText(frame, str(marker_id), 
+                    (top_left[0], top_left[1] - 15),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (0, 255, 0), 2)
+        
+                # Display the resulting frame
+            cv2.imshow('frame',frame)
+                
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+            
+        cv2.destroyAllWindows()
+        cap.release()
+            
+        print("percent detected: ", 100 * detected / total, "%")

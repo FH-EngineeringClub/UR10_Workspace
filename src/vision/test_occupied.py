@@ -4,6 +4,7 @@ import cv2
 
 viz = ChessViz([0, 0], 640, 480, cam_index=0)
 image = viz.get_image()
+image = viz.get_chessboard(image)
 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 cv2.imshow('image', image)
 cv2.waitKey(0)
