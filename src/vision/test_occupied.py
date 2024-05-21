@@ -7,6 +7,7 @@ import numpy as np
 viz = ChessViz([272, 506], 222, 220, cam_index=0, skim_percent=0.15)
 viz.convert_to_chess_array(1)
 image = viz.get_image()
+image = viz.get_chessboard(image)
 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 cv2.imshow('image', image)
 cv2.waitKey(0)
