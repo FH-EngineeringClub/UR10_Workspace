@@ -189,3 +189,15 @@ class ChessViz:
         vectorized_func = np.vectorize(self.__calculate_contrast)
         contrast_values = vectorized_func(squares_array)
         print(contrast_values)
+
+    # From crop, reads handwritten digit on top of chess pieces to 2d array
+    def convert_to_chess_array(self, squares_array):
+        chess_array = np.empty(shape=(8, 8), dtype='U1')
+
+        for i in range(8): 
+            for j in range(8):
+                # run model on squares_array[i][j] and 
+                chess_array[i][j] = 'P'
+
+        print(chess_array)
+                
