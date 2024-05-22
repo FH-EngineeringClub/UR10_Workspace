@@ -4,11 +4,10 @@ from tkinter import *
 from PIL import Image, ImageTk
 
 class ChessViz:
-    def __init__(self, crop_origin, crop_width, crop_height, skim_percent=0.1, 
+    def __init__(self, big_crop, small_crop, skim_percent=0.1, 
                  variance=5, occupied_threshold = 50, cam_index=1):
-        self.crop_origin = crop_origin                  # [y value, x value]
-        self.crop_width = crop_width
-        self.crop_height = crop_height
+        self.big_crop = big_crop                        # [[y value, x value], width, height]
+        self.small_crop = small_crop                    # [[y value, x value], width, height]
         self.skim_percent = skim_percent
         self.variance = variance
         self.occupied_threshold = occupied_threshold
@@ -22,27 +21,32 @@ class ChessViz:
         self.resolution_height = image.shape[0] 
 
     # For tkinter gui
-    def __update_crop_params(self, x_var, y_var, width_var, height_var):
-        self.crop_origin[1] = int(x_var.get())
-        self.crop_origin[0] = int(y_var.get())
-        self.crop_width = int(width_var.get())
-        self.crop_height = int(height_var.get())
+    def __update_crop_params(self, crop_params, x_var, y_var, width_var, height_var):
+        crop_params[0][1] = int(x_var.get())
+        crop_params[0][0] = int(y_var.get())
+        crop_params[1] = int(width_var.get())
+        crop_params[2] = int(height_var.get())
 
     # For tkinter gui
-    def __show_frame(self, cap, lmain):
+    def __show_frame(self, crop_params, cap, lmain):
         _, frame = cap.read()
-        cropped_frame = frame[self.crop_origin[0]:(self.crop_origin[0] + self.crop_height), 
-                            self.crop_origin[1]:(self.crop_origin[1] + self.crop_width)]
+        cropped_frame = frame[crop_params[0][0]:(crop_params[0][0] + crop_params[2]), 
+                            crop_params[0][1]:(crop_params[0][1] + crop_params[1])]
         cv_img = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(cv_img)
         imgtk = ImageTk.PhotoImage(image=img)
         lmain.imgtk = imgtk
         lmain.configure(image=imgtk)
-        lmain.after(10, lambda: self.__show_frame(cap, lmain))
+        lmain.after(10, lambda: self.__show_frame(crop_params, cap, lmain))
 
     # Uses tkinter gui to help dev find crop parameters, i.e. crop origin, 
     # crop width, and crop height
-    def crop_gui(self):
+    def crop_gui(self, crop_id):
+        if crop_id == 0: 
+            crop_params = self.big_crop
+        elif crop_id == 1:
+            crop_params = self.small_crop
+            
         cap = cv2.VideoCapture(self.cam_index, cv2.CAP_DSHOW)
 
         root = Tk()
@@ -91,11 +95,12 @@ class ChessViz:
         # Button to update cropping parameters
         button = Button(root, text="Update Crop", 
                         command=lambda: self.__update_crop_params(
-                            x_var, y_var, width_var, height_var))
+                            crop_params, x_var, y_var, width_var, height_var))
         button.pack()
-        root.bind('<Return>', lambda event: self.__update_crop_params(x_var, y_var, width_var, height_var))
+        root.bind('<Return>', lambda event: self.__update_crop_params(
+            crop_params, x_var, y_var, width_var, height_var))
 
-        self.__show_frame(cap, lmain)  # Start showing the frame
+        self.__show_frame(crop_params, cap, lmain)  # Start showing the frame
         root.mainloop()  # Start the GUI
 
         cap.release()
@@ -109,11 +114,9 @@ class ChessViz:
         
         return image
     
-    def get_chessboard(self, image):
-        cropped_image = image[self.crop_origin[0]:(self.crop_origin[0] + self.crop_height), 
-                            self.crop_origin[1]:(self.crop_origin[1] + self.crop_width)]
-        
-        return cropped_image
+    def get_crop(self, image, crop_params):
+        return image[crop_params[0][0]:(crop_params[0][0] + crop_params[2]), 
+                        crop_params[0][1]:(crop_params[0][1] + crop_params[1])]
 
     # TODO: Uses canny edge detection to set crop_width, crop_height,
     # and crop_origin automatically
@@ -190,8 +193,25 @@ class ChessViz:
         contrast_values = vectorized_func(squares_array)
         print(contrast_values)
         
-    def get_centers(self, corners):
-        top_left, top_right, bottom_right, bottom_left = corners
+    def get_centers(self, corners_array):
+        center_array = np.empty((np.size(corners_array, 0), 2))
+        
+        for i in range(np.size(corners_array, 0)):
+            corners = corners_array[i].reshape((4, 2))
+            (top_left, top_right, bottom_right, bottom_left) = corners
+            
+            # Convert the (x,y) coordinate pairs to integers
+            top_right = (int(top_right[0]), int(top_right[1]))
+            bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
+            bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
+            top_left = (int(top_left[0]), int(top_left[1]))
+        
+            # Calculate and draw the center of the ArUco marker
+            center_y = int((top_left[0] + bottom_right[0]) / 2.0)
+            center_x = int((top_left[1] + bottom_right[1]) / 2.0)
+            center_array[i] = (center_y, center_x)
+            
+        return center_array
     
     def get_chess_array(self, centers, ids, chess_image):
         pass
@@ -218,7 +238,7 @@ class ChessViz:
             if len(corners) > 0:
                 if len(corners) == 32:
                     detected += 1
-                    
+                
                 # Flatten the ArUco IDs list
                 # ids = ids.flatten()
                 # # Loop over the detected ArUco corners
