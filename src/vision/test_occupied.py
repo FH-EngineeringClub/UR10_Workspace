@@ -1,8 +1,11 @@
 from chessviz import ChessViz
 import matplotlib.pyplot as plt
 import cv2
+import numpy as np
 
-viz = ChessViz([0, 0], 640, 480, cam_index=0)
+
+viz = ChessViz([272, 506], 222, 220, cam_index=0, skim_percent=0.15)
+viz.convert_to_chess_array(1)
 image = viz.get_image()
 image = viz.get_chessboard(image)
 image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -10,9 +13,6 @@ cv2.imshow('image', image)
 cv2.waitKey(0)
 
 squares_array = viz.create_squares_array(image)
-# print("shape before:", squares_array[0][0].shape)
-# viz.skim_squares_array(squares_array)
-# print("shape after:", squares_array[0][0].shape)
 
 # display squares_array
 fig, axes = plt.subplots(nrows=8, ncols=8, figsize=(8, 8))
@@ -30,7 +30,7 @@ for i in range(64):
 # Adjust layout to prevent overlap
 plt.tight_layout()
 # Display the figure
-# viz.find_threshold_values(squares_array)
+viz.find_threshold_values(squares_array)
 plt.show()
 
 
