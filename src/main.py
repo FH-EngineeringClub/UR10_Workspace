@@ -87,8 +87,8 @@ PIECE_HEIGHTS = {
     "K": 0.08049 - 0.001,
     "p": 0.03345 + 0.002,  # add 2mm to the height of the pawn
     "P": 0.03345 + 0.002,  # add 2mm to the height of the pawn
-    "r": 0.053 - 0.008,
-    "R": 0.053 - 0.008,
+    "r": 0.053 - 0.012,
+    "R": 0.053 - 0.012,
     "n": 0.04569,
     "N": 0.04569,
     "b": 0.05902 - 0.002,
@@ -177,7 +177,6 @@ def forcemode_lower():
         t_start = control_interface.initPeriod()
         # Move the robot down for 2 seconds
         tcp_cycles += 1
-        print(tcp_cycles)
         control_interface.forceMode(
             task_frame, selection_vector, tcp_down, FORCE_TYPE, limits
         )
@@ -388,7 +387,7 @@ class Move:
             "to",
             self.move_to,
         )
-        board_height = self.to_position_height + self.board_height
+        board_height = self.from_position_height + self.board_height
         move_to_square(self.from_pos, self.lift_height)
         print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
         send_command_to_robot(OUTPUT_24)  # energize the electromagnet
@@ -413,17 +412,17 @@ class Move:
         Remove a piece from the chess board
         """
         board_height = self.to_position_height + self.board_height
-        print("Removing piece", board.piece_at(target_square), "from", self.move_from)
-        move_to_square(self.from_pos, self.lift_height)
+        print("Removing piece", board.piece_at(origin_square), "from", self.move_to)
+        move_to_square(self.to_pos, self.lift_height)
         print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
         send_command_to_robot(OUTPUT_24)  # energize the electromagnet
-        move_to_square(self.from_pos, board_height)
+        move_to_square(self.to_pos, board_height)
         print(Fore.CYAN + "Lowering TCP...")
         sleep(0.2)
         forcemode_lower()
         print(Fore.CYAN + "Lifting piece...")
-        move_to_square(self.from_pos, self.lift_height)
-        lift_piece(self.from_pos)
+        move_to_square(self.to_pos, self.lift_height)
+        lift_piece(self.to_pos)
         print("Moving piece to ex")
         move_to_square(BIN_POSITION, self.lift_height)  # move to the side position
         print(Fore.LIGHTBLUE_EX + "De-energizing electromagnet...")
