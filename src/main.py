@@ -118,12 +118,21 @@ zero_player_mode = input(
     Fore.LIGHTGREEN_EX
     + "Would you like to let stockfish play against itself? (no player input) (y/N)"
 )
+
 print(zero_player_mode)
 if zero_player_mode == "y" or zero_player_mode == "Y":
     print(Fore.LIGHTMAGENTA_EX + "Entering zero player mode!")
     zero_player_mode = "TRUE"
 else:
     print(Fore.GREEN + "Continuing with normal mode!")
+    chess_vision_mode = input(Fore.LIGHTMAGENTA_EX + "Would you like to let the computer" 
+                              + " detect human moves autonomously. (press space to"
+                              + " confirm human's move) (y/N)")
+    if chess_vision_mode.lower() == 'y':
+        print(Fore.GREEN + "Continuing with chess vision mode!")
+        chess_vision_mode = True
+    else:
+        chess_viision_mode = False
 
 start_new_game = input(
     Fore.YELLOW + "Would you like to continue the last saved game? (Y/n)"
@@ -542,47 +551,61 @@ while not board.is_game_over():
             else:
                 print(Fore.WHITE + move.uci(), end=" ")
 
-        inputmove = input(
-            "\n"
-            + Fore.BLUE
-            + "Input move from the following legal moves, or 'undo' to undo (SAN format):"
-        )  # Get the move from the user
+        if chess_vision_mode:
+            print("In chess vision mode. Press space to blablabla.")
+            space_detected = False
 
-        user_confirmation = input(
-            Fore.YELLOW + "Are you sure you want to make this move? (Y/n)"
-        )
-        if (
-            user_confirmation != "y"
-            and user_confirmation != "Y"
-            and user_confirmation != ""
-        ):
-            print(
-                Fore.RED + "Move not confirmed, please try again"
-            )  # If the user doesn't confirm the move, ask for a new move
-            continue  # Skip the rest of the loop and start from the beginning
+            while not space_detected:
+                user_input = input()
+                if input == " ": 
+                    print("continuing goo goo ga ga.")
+                    space_detected = True
+                else:
+                    print("Please enter a space to continue.")
+        else: 
+            inputmove = input(
+                "\n"
+                + Fore.BLUE
+                + "Input move from the following legal moves, or 'undo' to undo (SAN format):"
+            )  # Get the move from the user
 
-        if inputmove == "undo":
-            print("Undoing last move...")
-            try:
-                for _ in range(2):
-                    board.pop()
-            except IndexError:
-                print(Fore.RED + "No moves to undo")
-            display_board()
-            save_last_play()
-            continue
-        else:
-            try:
-                valid_move = (
-                    chess.Move.from_uci(inputmove) in board.legal_moves
-                )  # Check if the move is valid
-            except ValueError:
-                print(Fore.RED + "Move is not in SAN format. Please try again.")
+            user_confirmation = input(
+                Fore.YELLOW + "Are you sure you want to make this move? (Y/n)"
+            )
+            if (
+                user_confirmation != "y"
+                and user_confirmation != "Y"
+                and user_confirmation != ""
+            ):
+                print(
+                    Fore.RED + "Move not confirmed, please try again"
+                )  # If the user doesn't confirm the move, ask for a new move
+                continue  # Skip the rest of the loop and start from the beginning
+
+            if inputmove == "undo":
+                print("Undoing last move...")
+                try:
+                    for _ in range(2):
+                        board.pop()
+                except IndexError:
+                    print(Fore.RED + "No moves to undo")
+                display_board()
+                save_last_play()
                 continue
+            else:
+                try:
+                    valid_input = (
+                        chess.Move.from_uci(inputmove) in board.legal_moves
+                    )  # Check if the move is valid
+                except ValueError:
+                    print(Fore.RED + "Move is not in SAN format. Please try again.")
+                    continue
 
-        if valid_move is True:
-            board.push_san(inputmove)  # Push the move to the board
+            if valid_input:
+                board.push_san(inputmove)  # Push the move to the board
 
+        # TODO: Add or statement for valid_detected_move
+        if valid_input:
             display_board()  # Update the board svg
 
             stockfish.set_fen_position(board.fen())  # Set the position of the board

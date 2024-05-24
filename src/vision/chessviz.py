@@ -157,18 +157,20 @@ class ChessViz:
         return value
             
     def get_chess_piece(self, center_y, center_x, id, chess_array):
-        # subtract relative origin of small from centers
-        center_y = center_y - self.y_origin
-        center_x = center_x - self.x_origin
-        
-        # divide center y and x by square width to acquire
-        # square coordinates
-        square_len = self.small_crop[1] // 8
-        center_y = self.modified_step(center_y, square_len, 0, 7)
-        center_x = self.modified_step(center_x, square_len, 0, 7)
-        
-        # convert square coordinates to chess array 
-        chess_array[center_y, center_x] = self.CHESS_DICT[id[0]]
+        if id[0] >= 0 and id[0] < 12:
+            # subtract relative origin of small from centers
+            center_y = center_y - self.y_origin
+            center_x = center_x - self.x_origin
+            
+            # divide center y and x by square width to acquire
+            # square coordinates
+            square_len = self.small_crop[1] // 8
+            center_y = self.modified_step(center_y, square_len, 0, 7)
+            center_x = self.modified_step(center_x, square_len, 0, 7)
+            
+            # convert square coordinates to chess array 
+            chess_array[center_y, center_x] = self.CHESS_DICT[id[0]]
+
         return chess_array
 
     def resize_image(self, image, factor):
@@ -197,7 +199,7 @@ class ChessViz:
                             most_common_piece = Counter(pieces_at_position).most_common(1)[0][0]
                             final_chess_array[i, j] = most_common_piece
 
-                print(final_chess_array)
+                print(final_chess_array, '\n')
                 sample_counter = 0
                 chess_arrays = np.full((sample_size, 8, 8), ' ', dtype='U1')
                 final_chess_array = np.full((8, 8), ' ', dtype='U1')
