@@ -125,14 +125,17 @@ if zero_player_mode == "y" or zero_player_mode == "Y":
     zero_player_mode = "TRUE"
 else:
     print(Fore.GREEN + "Continuing with normal mode!")
-    chess_vision_mode = input(Fore.LIGHTMAGENTA_EX + "Would you like to let the computer" 
-                              + " detect human moves autonomously. (press space to"
-                              + " confirm human's move) (y/N)")
-    if chess_vision_mode.lower() == 'y':
+    chess_vision_mode = input(
+        Fore.LIGHTMAGENTA_EX
+        + "Would you like to let the computer"
+        + " detect human moves autonomously. (press space to"
+        + " confirm human's move) (y/N)"
+    )
+    if chess_vision_mode.lower() == "y":
         print(Fore.GREEN + "Continuing with chess vision mode!")
         chess_vision_mode = True
     else:
-        chess_viision_mode = False
+        chess_vision_mode = False
 
 start_new_game = input(
     Fore.YELLOW + "Would you like to continue the last saved game? (Y/n)"
@@ -557,12 +560,12 @@ while not board.is_game_over():
 
             while not space_detected:
                 user_input = input()
-                if input == " ": 
+                if input == " ":
                     print("continuing goo goo ga ga.")
                     space_detected = True
                 else:
                     print("Please enter a space to continue.")
-        else: 
+        else:
             inputmove = input(
                 "\n"
                 + Fore.BLUE
