@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 from tkinter import *
 from PIL import Image, ImageTk
+from collections import Counter
 
 class ChessViz:
     ARUCO_DICT = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
@@ -175,13 +176,32 @@ class ChessViz:
         h, w = image.shape[:2]
         return cv2.resize(image, (round(factor * w), round(factor * h)))
 
-    def test_aruco_detection(self):
+    def test_aruco_detection(self, sample_size):
         cap = cv2.VideoCapture(self.cam_index, cv2.CAP_DSHOW)
         total = 0
         detected = 0
 
+        sample_counter = 0
+        chess_arrays = np.full((sample_size, 8, 8), ' ', dtype='U1')
+        final_chess_array = np.full((8, 8), ' ', dtype='U1')
         while(cap.isOpened()):
-            chess_array = np.full((8, 8), '', dtype='U1')
+            if (sample_counter >= sample_size):
+                # Iterate through each position on the board
+                for i in range(8):
+                    for j in range(8):
+                        # Collect all piece characters at the current position from all arrays
+                        pieces_at_position = [board[i, j] for board in chess_arrays if board[i, j] != ' ']
+                        
+                        if pieces_at_position:
+                            # Find the most common piece character at the current position
+                            most_common_piece = Counter(pieces_at_position).most_common(1)[0][0]
+                            final_chess_array[i, j] = most_common_piece
+
+                print(final_chess_array)
+                sample_counter = 0
+                chess_arrays = np.full((sample_size, 8, 8), ' ', dtype='U1')
+                final_chess_array = np.full((8, 8), ' ', dtype='U1')
+            
             ret, frame = cap.read()
             frame = self.get_crop(frame, self.big_crop) 
             frame = self.resize_image(frame, 1)
@@ -191,7 +211,6 @@ class ChessViz:
             if len(corners) == 32:
                 detected += 1
             
-            print(ids)
             if len(corners) > 0:
                 # Flatten the ArUco IDs list
                 # ids = ids.flatten()
@@ -225,11 +244,12 @@ class ChessViz:
                     (top_left[0], top_left[1] - 15),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (0, 255, 0), 2)
-                    self.get_chess_piece(center_y, center_x, marker_id, chess_array)
-                    
+                    self.get_chess_piece(center_y, center_x, marker_id, chess_arrays[sample_counter])
+            
+
             # Display the resulting frame
             cv2.imshow('frame', frame)
-            print(chess_array)
+            sample_counter += 1
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
             
