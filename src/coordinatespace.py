@@ -11,7 +11,7 @@ import rtde_io
 import rtde_receive
 import rtde_control
 
-HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 RTDE_FREQUENCY = 10.0  # Hz to update from robot
 
@@ -173,3 +173,5 @@ def direct_move_piece(from_pos, to_pos, board_height, lift_height):
 
 direct_move_piece(from_position, to_position, BOARD_HEIGHT, LIFT_HEIGHT)
 # print(OUTPUT_0)
+
+control_interface.stopScript()

@@ -678,3 +678,5 @@ print(Fore.CYAN + "Moving to bin position...")
 
 print(board.outcome())  # Print the winner of the game
 print(Fore.GREEN + "Game over!")
+
+control_interface.stopScript()  # Disconnect from the robot

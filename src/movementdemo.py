@@ -39,3 +39,5 @@ position(37, -33, -148, -86, 86, 100)
 position(37, -88, -8, -170, 85, 100)
 position(-65, -88, -8, -170, 85, 100)
 position(-67, -87, -119, -63, 89, -101)  # home position
+
+control_interface.stopScript()
