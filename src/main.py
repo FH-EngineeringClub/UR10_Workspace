@@ -19,6 +19,9 @@ import chess.polyglot
 from stockfish import Stockfish
 from stockfish import StockfishException
 from colorama import Fore
+from vision.chessviz import ChessViz
+
+chessviz = ChessViz([[190, 390], 410], [[230, 420], 349], cam_index=1)
 
 HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
@@ -555,16 +558,21 @@ while not board.is_game_over():
                 print(Fore.WHITE + move.uci(), end=" ")
 
         if chess_vision_mode:
-            print("In chess vision mode. Press space to blablabla.")
+            print("Press space to register move.")
             space_detected = False
 
             while not space_detected:
                 user_input = input()
                 if input == " ":
-                    print("continuing goo goo ga ga.")
+                    print("Continuing.")
                     space_detected = True
                 else:
                     print("Please enter a space to continue.")
+                    
+            # Calculate board state
+            chess_array = chessviz.get_chess_array(20)
+            # valid_input = (ask nic)
+            # if valid_input, push san somehow (ask nic)
         else:
             inputmove = input(
                 "\n"
@@ -607,7 +615,6 @@ while not board.is_game_over():
             if valid_input:
                 board.push_san(inputmove)  # Push the move to the board
 
-        # TODO: Add or statement for valid_detected_move
         if valid_input:
             display_board()  # Update the board svg
 
