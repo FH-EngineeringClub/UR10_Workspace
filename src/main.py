@@ -20,6 +20,8 @@ from stockfish import Stockfish
 from stockfish import StockfishException
 from colorama import Fore
 from vision.chessviz import ChessViz
+from queue import Queue
+import threading
 
 chessviz = ChessViz([[190, 390], 410], [[230, 420], 349], cam_index=1)
 
@@ -447,6 +449,11 @@ class Move:
         move_to_square(BIN_POSITION, self.lift_height)
         print(Fore.CYAN + "Piece removed successfully!")
 
+sample_size = 20
+vision_thread = threading.Thread(target=chessviz.chess_array_update_thread, 
+                       args=(sample_size,))
+vision_thread.start()
+lock = threading.Lock()
 
 while not board.is_game_over():
     if zero_player_mode == "TRUE":
@@ -569,9 +576,13 @@ while not board.is_game_over():
                 else:
                     print("Please enter a space to continue.")
                     
-            # Calculate board state
-            chess_array = chessviz.get_chess_array(20)
-            # valid_input = (ask nic)
+            chessviz.counter_on.set()
+            chessviz.counter_on.wait()
+            
+            with lock:
+                chess_array = chessviz.chess_array
+                # valid_input = (ask nic)
+                
             # if valid_input, push san somehow (ask nic)
         else:
             inputmove = input(
