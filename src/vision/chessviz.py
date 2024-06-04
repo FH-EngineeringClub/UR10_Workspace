@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from tkinter import *
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageDraw
 from collections import Counter
 import threading
 
@@ -51,10 +51,23 @@ class ChessViz:
     # For tkinter gui
     def __show_frame(self, crop_params, cap, lmain):
         _, frame = cap.read()
-        cropped_frame = frame[crop_params[0][0]:(crop_params[0][0] + crop_params[1]), 
+        cropped_frame = frame[crop_params[0][0]:(crop_params[0][0] + crop_params[1]),
                             crop_params[0][1]:(crop_params[0][1] + crop_params[1])]
         cv_img = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(cv_img)
+
+        # Draw lines directly on the image using PIL's ImageDraw
+        draw = ImageDraw.Draw(img)
+        step = crop_params[1] // 8
+
+        # Draw vertical lines
+        for i in range(1, 8):
+            draw.line((i * step, 0, i * step, crop_params[1]), fill='black', width=3)
+
+        # Draw horizontal lines
+        for j in range(1, 8):
+            draw.line((0, j * step, crop_params[1], j * step), fill='black', width=3)
+
         imgtk = ImageTk.PhotoImage(image=img)
         lmain.imgtk = imgtk
         lmain.configure(image=imgtk)
@@ -188,15 +201,15 @@ class ChessViz:
         detected = 0
 
         sample_counter = 0
-        chess_arrays = np.full((sample_size, 8, 8), ' ', dtype='U1')
-        final_chess_array = np.full((8, 8), ' ', dtype='U1')
+        chess_arrays = np.full((sample_size, 8, 8), '.', dtype='U1')
+        final_chess_array = np.full((8, 8), '.', dtype='U1')
         while(cap.isOpened()):
             if (sample_counter >= sample_size):
                 # Iterate through each position on the board
                 for i in range(8):
                     for j in range(8):
                         # Collect all piece characters at the current position from all arrays
-                        pieces_at_position = [board[i, j] for board in chess_arrays if board[i, j] != ' ']
+                        pieces_at_position = [board[i, j] for board in chess_arrays if board[i, j] != '.']
                         
                         if pieces_at_position:
                             # Find the most common piece character at the current position
@@ -205,8 +218,8 @@ class ChessViz:
 
                 print(final_chess_array, '\n')
                 sample_counter = 0
-                chess_arrays = np.full((sample_size, 8, 8), ' ', dtype='U1')
-                final_chess_array = np.full((8, 8), ' ', dtype='U1')
+                chess_arrays = np.full((sample_size, 8, 8), '.', dtype='U1')
+                final_chess_array = np.full((8, 8), '.', dtype='U1')
             
             ret, frame = cap.read()
             frame = self.get_crop(frame, self.big_crop) 
@@ -246,10 +259,11 @@ class ChessViz:
                     
                     # Draw the ArUco marker ID on the video frame
                     # The ID is always located at the top_left of the ArUco marker
-                    cv2.putText(frame, str(marker_id), 
-                    (top_left[0], top_left[1] - 15),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (0, 255, 0), 2)
+                    if marker_id[0] > 0 and marker_id[0] < 12:
+                        cv2.putText(frame, str(self.CHESS_DICT[marker_id[0]]), 
+                        (top_left[0], top_left[1] - 25),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.55, (0, 255, 0), 2)
                     self.get_chess_piece(center_y, center_x, marker_id, chess_arrays[sample_counter])
             
 
