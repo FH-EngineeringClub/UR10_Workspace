@@ -20,7 +20,6 @@ from stockfish import Stockfish
 from stockfish import StockfishException
 from colorama import Fore
 from vision.chessviz import ChessViz
-from queue import Queue
 import threading
 
 chessviz = ChessViz([[190, 390], 410], [[230, 420], 349], cam_index=1)
@@ -449,6 +448,41 @@ class Move:
         move_to_square(BIN_POSITION, self.lift_height)
         print(Fore.CYAN + "Piece removed successfully!")
 
+# converts 2d array in san format to concise fen(cfen), i.e. a fen without values 
+# for player turn, castling rights, etc. 
+def convert_to_cfen(chess_array):
+    rows = []
+    for i in range(8):
+        row = ""
+        empty_count = 0
+        for j in range(8):
+            piece = chess_array[i][j]
+            if piece == '.':
+                empty_count += 1
+            else:
+                if empty_count > 0:
+                    row += str(empty_count)
+                    empty_count = 0
+                row += piece
+        
+        if empty_count > 0:
+            row += str(empty_count)
+        rows.append(row)
+    
+    cfen = '/'.join(rows)
+    return cfen
+
+def update_board_with_vision(chess_array, board):
+    new_fen = convert_to_cfen(chess_array)
+    
+    for move in board.legal_moves:
+        board.push(move)
+        if new_fen == board.fen().split(' ')[0]:
+            return move.uci()
+        board.pop()
+        
+    return None
+
 sample_size = 20
 vision_thread = threading.Thread(target=chessviz.chess_array_update_thread, 
                        args=(sample_size,))
@@ -565,25 +599,21 @@ while not board.is_game_over():
                 print(Fore.WHITE + move.uci(), end=" ")
 
         if chess_vision_mode:
-            print("Press space to register move.")
-            space_detected = False
-
-            while not space_detected:
-                user_input = input()
-                if input == " ":
-                    print("Continuing.")
-                    space_detected = True
-                else:
-                    print("Please enter a space to continue.")
-                    
-            chessviz.counter_on.set()
-            chessviz.counter_on.wait()
-            
-            with lock:
-                chess_array = chessviz.chess_array
-                # valid_input = (ask nic)
+            while True:
+                print("Press enter key to register move.")
+                input()
                 
-            # if valid_input, push san somehow (ask nic)
+                chessviz.counter_on.clear()
+                chessviz.counter_on.wait()
+                
+                with lock:
+                    chess_array = chessviz.chess_array
+                
+                uci_move = update_board_with_vision(chess_array, board)
+                
+                if uci_move:
+                    break
+                print("Illegal or impossible move, please try again.")
         else:
             inputmove = input(
                 "\n"
