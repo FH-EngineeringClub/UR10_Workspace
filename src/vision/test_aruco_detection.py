@@ -1,5 +1,19 @@
 import cv2
 from chessviz import ChessViz
+import threading
 
-chessviz = ChessViz([[190, 390], 410], [[230, 424], 348], cam_index=1)
-chessviz.test_aruco_detection(10)
+sample_size=20
+chessviz = ChessViz([[190, 390], 410], [[230, 424], 348], cam_index=0)
+vision_thread = threading.Thread(target=chessviz.chess_array_update_thread, 
+                       args=(sample_size,))
+lock = threading.Lock()
+vision_thread.start()
+
+while True:
+    print("Press enter to register move.")
+    input()
+    chessviz.counter_on.clear()
+    chessviz.counter_on.wait()
+    
+    with lock:
+        print(chessviz.chess_array)
