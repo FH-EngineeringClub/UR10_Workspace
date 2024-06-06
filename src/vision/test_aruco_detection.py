@@ -3,7 +3,7 @@ from chessviz import ChessViz
 import threading
 
 sample_size=20
-chessviz = ChessViz([[190, 390], 410], [[230, 424], 348], cam_index=0)
+chessviz = ChessViz([[190, 390], 410], [[230, 424], 348], cam_index=1)
 vision_thread = threading.Thread(target=chessviz.chess_array_update_thread, 
                        args=(sample_size,))
 lock = threading.Lock()

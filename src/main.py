@@ -22,7 +22,7 @@ from colorama import Fore
 from vision.chessviz import ChessViz
 import threading
 
-chessviz = ChessViz([[190, 390], 410], [[230, 420], 349], cam_index=1)
+chessviz = ChessViz([[190, 390], 410], [[230, 424], 348], cam_index=1)
 
 HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
@@ -453,7 +453,7 @@ class Move:
 # for player turn, castling rights, etc. 
 def convert_to_cfen(chess_array):
     rows = []
-    for i in range(8):
+    for i in range(7, -1, -1):
         row = ""
         empty_count = 0
         for j in range(8):
@@ -475,14 +475,16 @@ def convert_to_cfen(chess_array):
 
 def update_board_with_vision(chess_array, board):
     new_fen = convert_to_cfen(chess_array)
-    
+    print("new fen: ", new_fen)
+
     for move in board.legal_moves:
         board.push(move)
+        print("exisiting fen: ", board.fen().split(' ')[0])
         if new_fen == board.fen().split(' ')[0]:
-            return move.uci()
+            return True
         board.pop()
         
-    return None
+    return False
 
 sample_size = 20
 vision_thread = threading.Thread(target=chessviz.chess_array_update_thread, 
@@ -609,11 +611,13 @@ while not board.is_game_over():
                 
                 with lock:
                     chess_array = chessviz.chess_array
+                    print(chess_array)
                 
-                uci_move = update_board_with_vision(chess_array, board)
+                valid_input = update_board_with_vision(chess_array, board)
                 
-                if uci_move:
+                if valid_input:
                     break
+                
                 print("Illegal or impossible move, please try again.")
         else:
             inputmove = input(
