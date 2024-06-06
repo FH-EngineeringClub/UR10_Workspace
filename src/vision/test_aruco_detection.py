@@ -9,11 +9,17 @@ vision_thread = threading.Thread(target=chessviz.chess_array_update_thread,
 lock = threading.Lock()
 vision_thread.start()
 
-while True:
-    print("Press enter to register move.")
-    input()
-    chessviz.counter_on.clear()
-    chessviz.counter_on.wait()
-    
-    with lock:
-        print(chessviz.chess_array)
+try:
+    while True:
+        print("Press enter to register move.")
+        input()
+        chessviz.counter_on.clear()
+        chessviz.counter_on.wait()
+        
+        with lock:
+            print(chessviz.chess_array)
+
+except KeyboardInterrupt:
+    print("Exiting program")
+    chessviz.shutdown.set()
+    vision_thread.join()
