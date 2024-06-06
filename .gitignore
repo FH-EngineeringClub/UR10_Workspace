@@ -2,3 +2,5 @@
 .DS_Store
 .venv
 __pycache__/
+jpgs/
+calibration_data.pkl
