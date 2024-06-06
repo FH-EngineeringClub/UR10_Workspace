@@ -109,12 +109,13 @@ stockfish_difficulty_level = {
 }  # dictionary to store the ELO difficulty levels of stockfish
 
 osSystem = platform.system()  # Get the OS
-if osSystem == "Darwin" or "Linux":
+if osSystem == "Darwin" or osSystem == "Linux":
     stockfishPath = subprocess.run(
         ["which", "stockfish"], capture_output=True, text=True, check=True
     ).stdout.strip("\n")  # noqa: E501
 elif osSystem == "Windows":
-    stockfishPath = input("Please enter the full path to the stockfish executable:")
+    stockfishPath = subprocess.run(['where', 'stockfish'], capture_output=True, text=True)
+    stockfishPath = stockfishPath.stdout.strip()
 else:
     exit("No binary or executable found for stockfish")
 
