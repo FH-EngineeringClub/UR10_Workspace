@@ -34,9 +34,10 @@ def position(base, shoulder, elbow, w1, w2, w3):
 
 
 position(-67, -87, -119, -63, 89, -101)  # home position
-position(-18, -77, -97, -96, 86, -52)  # lift up
-position(15, -60, -149, -62, 86, -18)  # lift down
-position(61, -158, -18, -97, 88, 41)  # behind robot
-position(15, -60, -149, -62, 86, -18)  # lift down
-position(-18, -77, -97, -96, 86, -52)  # lift up
+position(-10, -92, -119, -55, 89, 0)
+position(37, -33, -148, -86, 86, 100)
+position(37, -88, -8, -170, 85, 100)
+position(-65, -88, -8, -170, 85, 100)
 position(-67, -87, -119, -63, 89, -101)  # home position
+
+control_interface.stopScript()
