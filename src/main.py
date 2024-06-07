@@ -19,6 +19,10 @@ import chess.polyglot
 from stockfish import Stockfish
 from stockfish import StockfishException
 from colorama import Fore
+from vision.chessviz import ChessViz
+import threading
+
+chessviz = ChessViz([[190, 390], 410], [[230, 424], 348], cam_index=1)
 
 HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
@@ -119,12 +123,24 @@ zero_player_mode = input(
     Fore.LIGHTGREEN_EX
     + "Would you like to let stockfish play against itself? (no player input) (y/N)"
 )
+
 print(zero_player_mode)
 if zero_player_mode == "y" or zero_player_mode == "Y":
     print(Fore.LIGHTMAGENTA_EX + "Entering zero player mode!")
     zero_player_mode = "TRUE"
 else:
     print(Fore.GREEN + "Continuing with normal mode!")
+    chess_vision_mode = input(
+        Fore.LIGHTMAGENTA_EX
+        + "Would you like to let the computer"
+        + " detect human moves autonomously. (press space to"
+        + " confirm human's move) (y/N)"
+    )
+    if chess_vision_mode.lower() == "y":
+        print(Fore.GREEN + "Continuing with chess vision mode!")
+        chess_vision_mode = True
+    else:
+        chess_vision_mode = False
 
 start_new_game = input(
     Fore.YELLOW + "Would you like to continue the last saved game? (Y/n)"
@@ -432,6 +448,48 @@ class Move:
         move_to_square(BIN_POSITION, self.lift_height)
         print(Fore.CYAN + "Piece removed successfully!")
 
+# converts 2d array in san format to concise fen(cfen), i.e. a fen without values 
+# for player turn, castling rights, etc. 
+def convert_to_cfen(chess_array):
+    rows = []
+    for i in range(7, -1, -1):
+        row = ""
+        empty_count = 0
+        for j in range(8):
+            piece = chess_array[i][j]
+            if piece == '.':
+                empty_count += 1
+            else:
+                if empty_count > 0:
+                    row += str(empty_count)
+                    empty_count = 0
+                row += piece
+        
+        if empty_count > 0:
+            row += str(empty_count)
+        rows.append(row)
+    
+    cfen = '/'.join(rows)
+    return cfen
+
+def update_board_with_vision(chess_array, board):
+    new_fen = convert_to_cfen(chess_array)
+    print("new fen: ", new_fen)
+
+    for move in board.legal_moves:
+        board.push(move)
+        print("exisiting fen: ", board.fen().split(' ')[0])
+        if new_fen == board.fen().split(' ')[0]:
+            return True
+        board.pop()
+        
+    return False
+
+sample_size = 20
+vision_thread = threading.Thread(target=chessviz.chess_array_update_thread, 
+                       args=(sample_size,))
+vision_thread.start()
+lock = threading.Lock()
 
 while not board.is_game_over():
     if zero_player_mode == "TRUE":
@@ -542,47 +600,67 @@ while not board.is_game_over():
             else:
                 print(Fore.WHITE + move.uci(), end=" ")
 
-        inputmove = input(
-            "\n"
-            + Fore.BLUE
-            + "Input move from the following legal moves, or 'undo' to undo (SAN format):"
-        )  # Get the move from the user
-
-        user_confirmation = input(
-            Fore.YELLOW + "Are you sure you want to make this move? (Y/n)"
-        )
-        if (
-            user_confirmation != "y"
-            and user_confirmation != "Y"
-            and user_confirmation != ""
-        ):
-            print(
-                Fore.RED + "Move not confirmed, please try again"
-            )  # If the user doesn't confirm the move, ask for a new move
-            continue  # Skip the rest of the loop and start from the beginning
-
-        if inputmove == "undo":
-            print("Undoing last move...")
-            try:
-                for _ in range(2):
-                    board.pop()
-            except IndexError:
-                print(Fore.RED + "No moves to undo")
-            display_board()
-            save_last_play()
-            continue
+        if chess_vision_mode:
+            while True:
+                print("Press enter key to register move.")
+                input()
+                
+                chessviz.counter_on.clear()
+                chessviz.counter_on.wait()
+                
+                with lock:
+                    chess_array = chessviz.chess_array
+                    print(chess_array)
+                
+                valid_input = update_board_with_vision(chess_array, board)
+                
+                if valid_input:
+                    break
+                
+                print("Illegal move, please try again.")
         else:
-            try:
-                valid_move = (
-                    chess.Move.from_uci(inputmove) in board.legal_moves
-                )  # Check if the move is valid
-            except ValueError:
-                print(Fore.RED + "Move is not in SAN format. Please try again.")
+            inputmove = input(
+                "\n"
+                + Fore.BLUE
+                + "Input move from the following legal moves, or 'undo' to undo (SAN format):"
+            )  # Get the move from the user
+
+            user_confirmation = input(
+                Fore.YELLOW + "Are you sure you want to make this move? (Y/n)"
+            )
+            if (
+                user_confirmation != "y"
+                and user_confirmation != "Y"
+                and user_confirmation != ""
+            ):
+                print(
+                    Fore.RED + "Move not confirmed, please try again"
+                )  # If the user doesn't confirm the move, ask for a new move
+                continue  # Skip the rest of the loop and start from the beginning
+
+            if inputmove == "undo":
+                print("Undoing last move...")
+                try:
+                    for _ in range(2):
+                        board.pop()
+                except IndexError:
+                    print(Fore.RED + "No moves to undo")
+                display_board()
+                save_last_play()
                 continue
+            else:
+                try:
+                    valid_input = (
+                        chess.Move.from_uci(inputmove) in board.legal_moves
+                    )  # Check if the move is valid
+                except ValueError:
+                    print(Fore.RED + "Move is not in SAN format. Please try again.")
+                    continue
 
-        if valid_move is True:
-            board.push_san(inputmove)  # Push the move to the board
+            if valid_input:
+                board.push_san(inputmove)  # Push the move to the board
 
+        if valid_input:
             display_board()  # Update the board svg
 
             stockfish.set_fen_position(board.fen())  # Set the position of the board

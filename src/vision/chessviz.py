@@ -1,8 +1,11 @@
 import cv2
 import numpy as np
 from tkinter import *
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageDraw
 from collections import Counter
+import threading
+import os
+import sys
 
 class ChessViz:
     ARUCO_DICT = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
@@ -37,7 +40,11 @@ class ChessViz:
         cam = cv2.VideoCapture(cam_index, cv2.CAP_DSHOW)
         ret, image = cam.read() 
         self.resolution_width = image.shape[1]
-        self.resolution_height = image.shape[0] 
+        self.resolution_height = image.shape[0]
+        self.chess_array = None
+        self.counter_on = threading.Event()
+        self.counter_on.set()
+        self.shutdown = threading.Event()
         
     # For tkinter gui
     def __update_crop_params(self, crop_params, x_var, y_var, sidelength_var):
@@ -48,10 +55,23 @@ class ChessViz:
     # For tkinter gui
     def __show_frame(self, crop_params, cap, lmain):
         _, frame = cap.read()
-        cropped_frame = frame[crop_params[0][0]:(crop_params[0][0] + crop_params[1]), 
+        cropped_frame = frame[crop_params[0][0]:(crop_params[0][0] + crop_params[1]),
                             crop_params[0][1]:(crop_params[0][1] + crop_params[1])]
         cv_img = cv2.cvtColor(cropped_frame, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(cv_img)
+
+        # Draw lines directly on the image using PIL's ImageDraw
+        draw = ImageDraw.Draw(img)
+        step = crop_params[1] // 8
+
+        # Draw vertical lines
+        for i in range(1, 8):
+            draw.line((i * step, 0, i * step, crop_params[1]), fill='black', width=3)
+
+        # Draw horizontal lines
+        for j in range(1, 8):
+            draw.line((0, j * step, crop_params[1], j * step), fill='black', width=3)
+
         imgtk = ImageTk.PhotoImage(image=img)
         lmain.imgtk = imgtk
         lmain.configure(image=imgtk)
@@ -157,18 +177,20 @@ class ChessViz:
         return value
             
     def get_chess_piece(self, center_y, center_x, id, chess_array):
-        # subtract relative origin of small from centers
-        center_y = center_y - self.y_origin
-        center_x = center_x - self.x_origin
-        
-        # divide center y and x by square width to acquire
-        # square coordinates
-        square_len = self.small_crop[1] // 8
-        center_y = self.modified_step(center_y, square_len, 0, 7)
-        center_x = self.modified_step(center_x, square_len, 0, 7)
-        
-        # convert square coordinates to chess array 
-        chess_array[center_y, center_x] = self.CHESS_DICT[id[0]]
+        if id[0] >= 0 and id[0] < 12:
+            # subtract relative origin of small from centers
+            center_y = center_y - self.y_origin
+            center_x = center_x - self.x_origin
+            
+            # divide center y and x by square width to acquire
+            # square coordinates
+            square_len = self.small_crop[1] // 8
+            center_y = self.modified_step(center_y, square_len, 0, 7)
+            center_x = self.modified_step(center_x, square_len, 0, 7)
+            
+            # convert square coordinates to chess array 
+            chess_array[center_y, center_x] = self.CHESS_DICT[id[0]]
+
         return chess_array
 
     def resize_image(self, image, factor):
@@ -176,40 +198,40 @@ class ChessViz:
         h, w = image.shape[:2]
         return cv2.resize(image, (round(factor * w), round(factor * h)))
 
-    def test_aruco_detection(self, sample_size):
+    def chess_array_update_thread(self, sample_size):
         cap = cv2.VideoCapture(self.cam_index, cv2.CAP_DSHOW)
-        total = 0
-        detected = 0
+        lock = threading.Lock()
 
         sample_counter = 0
-        chess_arrays = np.full((sample_size, 8, 8), ' ', dtype='U1')
-        final_chess_array = np.full((8, 8), ' ', dtype='U1')
-        while(cap.isOpened()):
+        chess_arrays = np.full((sample_size, 8, 8), '.', dtype='U1')
+        final_chess_array = np.full((8, 8), '.', dtype='U1')
+        
+        while not self.shutdown.is_set():
+            #if event detected, counter on
             if (sample_counter >= sample_size):
                 # Iterate through each position on the board
                 for i in range(8):
                     for j in range(8):
                         # Collect all piece characters at the current position from all arrays
-                        pieces_at_position = [board[i, j] for board in chess_arrays if board[i, j] != ' ']
+                        pieces_at_position = [board[i, j] for board in chess_arrays if board[i, j] != '.']
                         
                         if pieces_at_position:
                             # Find the most common piece character at the current position
                             most_common_piece = Counter(pieces_at_position).most_common(1)[0][0]
                             final_chess_array[i, j] = most_common_piece
 
-                print(final_chess_array)
+                with lock:
+                    self.chess_array = final_chess_array
+                    
                 sample_counter = 0
-                chess_arrays = np.full((sample_size, 8, 8), ' ', dtype='U1')
-                final_chess_array = np.full((8, 8), ' ', dtype='U1')
+                chess_arrays = np.full((sample_size, 8, 8), '.', dtype='U1')
+                final_chess_array = np.full((8, 8), '.', dtype='U1')
+                self.counter_on.set()
             
             ret, frame = cap.read()
             frame = self.get_crop(frame, self.big_crop) 
-            frame = self.resize_image(frame, 1)
-            total += 1
             # Detect ArUco markers in the video frame
             (corners, ids, rejected) = cv2.aruco.detectMarkers(frame, self.ARUCO_DICT)
-            if len(corners) == 32:
-                detected += 1
             
             if len(corners) > 0:
                 # Flatten the ArUco IDs list
@@ -244,16 +266,11 @@ class ChessViz:
                     (top_left[0], top_left[1] - 15),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     0.5, (0, 255, 0), 2)
-                    self.get_chess_piece(center_y, center_x, marker_id, chess_arrays[sample_counter])
-            
-
+                    if not self.counter_on.is_set():
+                        self.get_chess_piece(center_y, center_x, marker_id, chess_arrays[sample_counter])
+                    
             # Display the resulting frame
+            cv2.waitKey(1)
             cv2.imshow('frame', frame)
-            sample_counter += 1
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
-            
-        cv2.destroyAllWindows()
-        cap.release()
-            
-        print("percent detected: ", 100 * detected / total, "%")
+            if not self.counter_on.is_set():
+                sample_counter += 1
