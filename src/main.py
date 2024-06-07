@@ -114,7 +114,9 @@ if osSystem == "Darwin" or osSystem == "Linux":
         ["which", "stockfish"], capture_output=True, text=True, check=True
     ).stdout.strip("\n")  # noqa: E501
 elif osSystem == "Windows":
-    stockfishPath = subprocess.run(['where', 'stockfish'], capture_output=True, text=True)
+    stockfishPath = subprocess.run(
+        ["where", "stockfish"], capture_output=True, text=True
+    )
     stockfishPath = stockfishPath.stdout.strip()
 else:
     exit("No binary or executable found for stockfish")
@@ -448,8 +450,9 @@ class Move:
         move_to_square(BIN_POSITION, self.lift_height)
         print(Fore.CYAN + "Piece removed successfully!")
 
-# converts 2d array in san format to concise fen(cfen), i.e. a fen without values 
-# for player turn, castling rights, etc. 
+
+# converts 2d array in san format to concise fen(cfen), i.e. a fen without values
+# for player turn, castling rights, etc.
 def convert_to_cfen(chess_array):
     rows = []
     for i in range(7, -1, -1):
@@ -457,20 +460,21 @@ def convert_to_cfen(chess_array):
         empty_count = 0
         for j in range(8):
             piece = chess_array[i][j]
-            if piece == '.':
+            if piece == ".":
                 empty_count += 1
             else:
                 if empty_count > 0:
                     row += str(empty_count)
                     empty_count = 0
                 row += piece
-        
+
         if empty_count > 0:
             row += str(empty_count)
         rows.append(row)
-    
-    cfen = '/'.join(rows)
+
+    cfen = "/".join(rows)
     return cfen
+
 
 def update_board_with_vision(chess_array, board):
     new_fen = convert_to_cfen(chess_array)
@@ -478,16 +482,18 @@ def update_board_with_vision(chess_array, board):
 
     for move in board.legal_moves:
         board.push(move)
-        print("exisiting fen: ", board.fen().split(' ')[0])
-        if new_fen == board.fen().split(' ')[0]:
+        print("exisiting fen: ", board.fen().split(" ")[0])
+        if new_fen == board.fen().split(" ")[0]:
             return True
         board.pop()
-        
+
     return False
 
+
 sample_size = 20
-vision_thread = threading.Thread(target=chessviz.chess_array_update_thread, 
-                       args=(sample_size,))
+vision_thread = threading.Thread(
+    target=chessviz.chess_array_update_thread, args=(sample_size,)
+)
 vision_thread.start()
 lock = threading.Lock()
 
@@ -602,21 +608,21 @@ while not board.is_game_over():
 
         if chess_vision_mode:
             while True:
-                print("Press enter key to register move.")
+                print("/n", "Press enter key to register move.")
                 input()
-                
+
                 chessviz.counter_on.clear()
                 chessviz.counter_on.wait()
-                
+
                 with lock:
                     chess_array = chessviz.chess_array
                     print(chess_array)
-                
+
                 valid_input = update_board_with_vision(chess_array, board)
-                
+
                 if valid_input:
                     break
-                
+
                 print("Illegal move, please try again.")
         else:
             inputmove = input(
