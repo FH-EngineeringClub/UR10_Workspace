@@ -21,6 +21,7 @@ from stockfish import StockfishException
 from colorama import Fore
 from vision.chessviz import ChessViz
 import threading
+from button_input import connectToButton, listenForButton
 
 chessviz = ChessViz([[190, 390], 410], [[230, 424], 348], cam_index=1)
 
@@ -609,7 +610,8 @@ while not board.is_game_over():
         if chess_vision_mode:
             while True:
                 print("/n", "Press enter key to register move.")
-                input()
+                connectToButton()
+                listenForButton()
 
                 chessviz.counter_on.clear()
                 chessviz.counter_on.wait()
