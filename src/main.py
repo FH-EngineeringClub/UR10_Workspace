@@ -618,7 +618,7 @@ while not board.is_game_over():
                 if valid_input:
                     break
                 
-                print("Illegal or impossible move, please try again.")
+                print("Illegal move, please try again.")
         else:
             inputmove = input(
                 "\n"

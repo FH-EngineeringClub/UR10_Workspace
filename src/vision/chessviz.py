@@ -4,6 +4,8 @@ from tkinter import *
 from PIL import Image, ImageTk, ImageDraw
 from collections import Counter
 import threading
+import os
+import sys
 
 class ChessViz:
     ARUCO_DICT = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
@@ -197,86 +199,78 @@ class ChessViz:
         return cv2.resize(image, (round(factor * w), round(factor * h)))
 
     def chess_array_update_thread(self, sample_size):
-        try:
-            cap = cv2.VideoCapture(self.cam_index, cv2.CAP_DSHOW)
-            lock = threading.Lock()
+        cap = cv2.VideoCapture(self.cam_index, cv2.CAP_DSHOW)
+        lock = threading.Lock()
 
-            sample_counter = 0
-            chess_arrays = np.full((sample_size, 8, 8), '.', dtype='U1')
-            final_chess_array = np.full((8, 8), '.', dtype='U1')
-            
-            while not self.shutdown.is_set():
-                #if event detected, counter on
-                if (sample_counter >= sample_size):
-                    # Iterate through each position on the board
-                    for i in range(8):
-                        for j in range(8):
-                            # Collect all piece characters at the current position from all arrays
-                            pieces_at_position = [board[i, j] for board in chess_arrays if board[i, j] != '.']
-                            
-                            if pieces_at_position:
-                                # Find the most common piece character at the current position
-                                most_common_piece = Counter(pieces_at_position).most_common(1)[0][0]
-                                final_chess_array[i, j] = most_common_piece
-
-                    with lock:
-                        self.chess_array = final_chess_array
-                        
-                    sample_counter = 0
-                    chess_arrays = np.full((sample_size, 8, 8), '.', dtype='U1')
-                    final_chess_array = np.full((8, 8), '.', dtype='U1')
-                    self.counter_on.set()
-                
-                ret, frame = cap.read()
-                frame = self.get_crop(frame, self.big_crop) 
-                frame = self.resize_image(frame, 1)
-                # Detect ArUco markers in the video frame
-                (corners, ids, rejected) = cv2.aruco.detectMarkers(frame, self.ARUCO_DICT)
-                
-                if len(corners) > 0:
-                    # Flatten the ArUco IDs list
-                    # ids = ids.flatten()
-                    # # Loop over the detected ArUco corners
-                    for (marker_corner, marker_id) in zip(corners, ids):
-                
-                        # Extract the marker corners
-                        corners = marker_corner.reshape((4, 2))
-                        (top_left, top_right, bottom_right, bottom_left) = corners
-                        
-                        # Convert the (x,y) coordinate pairs to integers
-                        top_right = (int(top_right[0]), int(top_right[1]))
-                        bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
-                        bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
-                        top_left = (int(top_left[0]), int(top_left[1]))
-                        
-                        # Draw the bounding box of the ArUco detection
-                        cv2.line(frame, top_left, top_right, (0, 255, 0), 2)
-                        cv2.line(frame, top_right, bottom_right, (0, 255, 0), 2)
-                        cv2.line(frame, bottom_right, bottom_left, (0, 255, 0), 2)
-                        cv2.line(frame, bottom_left, top_left, (0, 255, 0), 2)
-                        
-                        # Calculate and draw the center of the ArUco marker
-                        center_y = int((top_left[0] + bottom_right[0]) / 2.0)
-                        center_x = int((top_left[1] + bottom_right[1]) / 2.0)
-                        cv2.circle(frame, (center_y, center_x), 4, (0, 0, 255), -1)
-                        
-                        # Draw the ArUco marker ID on the video frame
-                        # The ID is always located at the top_left of the ArUco marker
-                        cv2.putText(frame, str(marker_id), 
-                        (top_left[0], top_left[1] - 15),
-                        cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5, (0, 255, 0), 2)
-                        self.get_chess_piece(center_y, center_x, marker_id, chess_arrays[sample_counter])
+        sample_counter = 0
+        chess_arrays = np.full((sample_size, 8, 8), '.', dtype='U1')
+        final_chess_array = np.full((8, 8), '.', dtype='U1')
         
-                # Display the resulting frame
-                cv2.waitKey(1)
-                cv2.imshow('frame', frame)
-                if not self.counter_on.is_set():
-                    sample_counter += 1
+        while not self.shutdown.is_set():
+            #if event detected, counter on
+            if (sample_counter >= sample_size):
+                # Iterate through each position on the board
+                for i in range(8):
+                    for j in range(8):
+                        # Collect all piece characters at the current position from all arrays
+                        pieces_at_position = [board[i, j] for board in chess_arrays if board[i, j] != '.']
+                        
+                        if pieces_at_position:
+                            # Find the most common piece character at the current position
+                            most_common_piece = Counter(pieces_at_position).most_common(1)[0][0]
+                            final_chess_array[i, j] = most_common_piece
+
+                with lock:
+                    self.chess_array = final_chess_array
+                    
+                sample_counter = 0
+                chess_arrays = np.full((sample_size, 8, 8), '.', dtype='U1')
+                final_chess_array = np.full((8, 8), '.', dtype='U1')
+                self.counter_on.set()
             
-        except Exception as e: 
-            print("Caught exception:", e)
+            ret, frame = cap.read()
+            frame = self.get_crop(frame, self.big_crop) 
+            # Detect ArUco markers in the video frame
+            (corners, ids, rejected) = cv2.aruco.detectMarkers(frame, self.ARUCO_DICT)
             
-        finally:
-            cv2.destroyAllWindows()
-            cap.release()
+            if len(corners) > 0:
+                # Flatten the ArUco IDs list
+                # ids = ids.flatten()
+                # # Loop over the detected ArUco corners
+                for (marker_corner, marker_id) in zip(corners, ids):
+            
+                    # Extract the marker corners
+                    corners = marker_corner.reshape((4, 2))
+                    (top_left, top_right, bottom_right, bottom_left) = corners
+                    
+                    # Convert the (x,y) coordinate pairs to integers
+                    top_right = (int(top_right[0]), int(top_right[1]))
+                    bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
+                    bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
+                    top_left = (int(top_left[0]), int(top_left[1]))
+                    
+                    # Draw the bounding box of the ArUco detection
+                    cv2.line(frame, top_left, top_right, (0, 255, 0), 2)
+                    cv2.line(frame, top_right, bottom_right, (0, 255, 0), 2)
+                    cv2.line(frame, bottom_right, bottom_left, (0, 255, 0), 2)
+                    cv2.line(frame, bottom_left, top_left, (0, 255, 0), 2)
+                    
+                    # Calculate and draw the center of the ArUco marker
+                    center_y = int((top_left[0] + bottom_right[0]) / 2.0)
+                    center_x = int((top_left[1] + bottom_right[1]) / 2.0)
+                    cv2.circle(frame, (center_y, center_x), 4, (0, 0, 255), -1)
+                    
+                    # Draw the ArUco marker ID on the video frame
+                    # The ID is always located at the top_left of the ArUco marker
+                    cv2.putText(frame, str(marker_id), 
+                    (top_left[0], top_left[1] - 15),
+                    cv2.FONT_HERSHEY_SIMPLEX,
+                    0.5, (0, 255, 0), 2)
+                    if not self.counter_on.is_set():
+                        self.get_chess_piece(center_y, center_x, marker_id, chess_arrays[sample_counter])
+                    
+            # Display the resulting frame
+            cv2.waitKey(1)
+            cv2.imshow('frame', frame)
+            if not self.counter_on.is_set():
+                sample_counter += 1
