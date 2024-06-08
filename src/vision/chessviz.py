@@ -42,7 +42,6 @@ class ChessViz:
         osSystem = platform.system()  # Get the OS
         if osSystem == "Darwin" or osSystem == "Linux":
             cam = cv2.VideoCapture(cam_index)
-            print("RUNNING ON MAC OR LINUX 45")
         elif osSystem == "Windows":
             cam = cv2.VideoCapture(cam_index, cv2.CAP_DSHOW)
         else:
@@ -99,7 +98,6 @@ class ChessViz:
         osSystem = platform.system()  # Get the OS
         if osSystem == "Darwin" or osSystem == "Linux":
             cap = cv2.VideoCapture(self.cam_index)
-            print("RUNNING ON MAC OR LINUX 102")
         elif osSystem == "Windows":
             cap = cv2.VideoCapture(self.cam_index, cv2.CAP_DSHOW)
         else:
@@ -181,7 +179,6 @@ class ChessViz:
         osSystem = platform.system()  # Get the OS
         if osSystem == "Darwin" or osSystem == "Linux":
             cam = cv2.VideoCapture(self.cam_index)
-            print("RUNNING ON MAC OR LINUX 184")
         elif osSystem == "Windows":
             cam = cv2.VideoCapture(self.cam_index, cv2.CAP_DSHOW)
         else:
@@ -254,7 +251,6 @@ class ChessViz:
         osSystem = platform.system()  # Get the OS
         if osSystem == "Darwin" or osSystem == "Linux":
             cap = cv2.VideoCapture(self.cam_index)
-            print("RUNNING ON MAC OR LINUX 257")
         elif osSystem == "Windows":
             cap = cv2.VideoCapture(self.cam_index, cv2.CAP_DSHOW)
         else:
