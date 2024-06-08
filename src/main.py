@@ -23,7 +23,7 @@ from vision.chessviz import ChessViz
 import threading
 from button_input import connectToButton, listenForButton
 
-chessviz = ChessViz([[190, 390], 410], [[230, 424], 348], cam_index=1)
+chessviz = ChessViz([[190, 390], 410], [[230, 424], 348], cam_index=0)
 
 HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
@@ -609,7 +609,7 @@ while not board.is_game_over():
 
         if chess_vision_mode:
             while True:
-                print("/n", "Press enter key to register move.")
+                print("\n", "Press enter key to register move.")
                 connectToButton()
                 listenForButton()
 
