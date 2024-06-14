@@ -45,6 +45,16 @@ See our [project Notion site](https://splendid-eel-64f.notion.site/UR10-Chess-Ro
 
 `brew install cmake`  
 `brew install boost`  
+Install tkinter:  
+`brew install tcl-tk`  
+`echo 'export PATH="/usr/local/opt/tcl-tk/bin:$PATH"' >> ~/.zshrc`  
+`source ~/.zshrc`  
+`echo $PATH | grep --color=auto tcl-tk`  
+`export LDFLAGS="-L/usr/local/opt/tcl-tk/lib"`  
+`export CPPFLAGS="-I/usr/local/opt/tcl-tk/include"`  
+`export PKG_CONFIG_PATH="/usr/local/opt/tcl-tk/lib/pkgconfig"`  
+`python -m tkinter -c "tkinter._test()"`
+
 If `pip install -r requirements.txt` does not correctly install ur_rtde, run `pip install ur-rtde --use-pep517`
 
 ### Linux _(Ubuntu 22.04 recommended)_
@@ -56,6 +66,7 @@ Add to path: `mv stockfish-ubuntu-x86-64 /usr/bin/stockfish`
 `sudo apt-get install libboost-all-dev`  
 `sudo apt install cmake`  
 `sudo add-apt-repository ppa:sdurobotics/ur-rtde`  
+`apt-get install python3-tk`  
 `sudo apt-get update`  
 `sudo apt install librtde librtde-dev`  
 If `pip install -r requirements.txt` does not correctly install ur_rtde, run `pip install ur-rtde --use-pep517`
