@@ -148,7 +148,10 @@ class ChessViz:
     # and crop_origin automatically
     def find_chessboard():
         pass
-        
+    
+    def get_base_center(self, aruco_center):
+        pass
+    
     def get_center(self, corners):
         corners = corners.reshape((4, 2))
         (top_left, top_right, bottom_right, bottom_left) = corners

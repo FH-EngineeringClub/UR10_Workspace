@@ -6,3 +6,5 @@ src/chess.svg
 src/lastgame.txt
 jpgs/
 calibration_data.pkl
+vision_venv
+oldcv_venv

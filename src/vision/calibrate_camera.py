@@ -43,13 +43,7 @@ ret, mtx, dist, rvecs, tvecs = cv.calibrateCamera(objpoints, imgpoints,
                                                   gray.shape[::-1], None, None)
 
 # Define the data to be saved
-calibration_data = {
-    "ret": ret,
-    "mtx": mtx,
-    "dist": dist,
-    "rvecs": rvecs,
-    "tvecs": tvecs
-}
+calibration_data = (ret, mtx, dist, rvecs, tvecs)
 
 # Save the calibration data to a pickle file
 with open('calibration_data.pkl', 'wb') as f:
