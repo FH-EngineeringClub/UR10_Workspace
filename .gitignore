@@ -5,3 +5,4 @@ __pycache__/
 jpgs/
 calibration_data.pkl
 vision_venv
+oldcv_venv
