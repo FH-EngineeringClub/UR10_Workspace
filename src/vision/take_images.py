@@ -2,7 +2,7 @@ import cv2
 import os
 import sys
 
-# Create the directory for storing images if it doesn't exist
+# Create the directory for spiptoring images if it doesn't exist
 if not os.path.exists('jpgs'):
     os.makedirs('jpgs')
 
