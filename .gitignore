@@ -2,5 +2,7 @@
 .DS_Store
 .venv
 __pycache__/
+src/chess.svg
+src/lastgame.txt
 jpgs/
 calibration_data.pkl
