@@ -4,6 +4,7 @@ from tkinter import *
 from PIL import Image, ImageTk, ImageDraw
 from collections import Counter
 import threading
+import math
 
 class ChessViz:
     ARUCO_DICT = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
@@ -21,8 +22,9 @@ class ChessViz:
         10: 'n', 
         11: 'R'
     }
+    CAMERA_HEIGHT = 1    # should be same units as piece height(METERS)
     
-    def __init__(self, big_crop, small_crop, cam_index=1):
+    def __init__(self, big_crop, small_crop, height_dict, cam_index=1):
         self.big_crop = big_crop                        # [[y value, x value], sidelength]
         self.small_crop = small_crop                    # [[y value, x value], sidelength]
         self.cam_index = cam_index
@@ -39,9 +41,12 @@ class ChessViz:
         ret, image = cam.read() 
         self.resolution_width = image.shape[1]
         self.resolution_height = image.shape[0]
+        self.camera_center = (self.resolution_height // 2, self.resolution_width // 2)
         self.chess_array = None
         self.counter_on = threading.Event()
         self.counter_on.set()
+        self.HEIGHT_DICT = height_dict
+
         
     # For tkinter gui
     def __update_crop_params(self, crop_params, x_var, y_var, sidelength_var):
@@ -149,8 +154,16 @@ class ChessViz:
     def find_chessboard():
         pass
     
-    def get_base_center(self, aruco_center):
-        pass
+    def get_base_center(self, aruco_center, piece_letter):
+        y_adj = self.camera_center[0] - aruco_center[0]
+        x_adj = self.camera_center[1] - aruco_center[1]
+        radial = int(math.sqrt(pow(y_adj, 2) + pow(x_adj, 2)))
+        new_radial = radial - (self.HEIGHT_DICT[piece_letter] / self.CAMERA_HEIGHT) * radial
+        new_y_adj = (y_adj / radial) * new_radial
+        new_x_adj = (x_adj / radial) * new_radial 
+        new_y = self.camera_center[0] - new_y_adj
+        new_x = self.camera_center[1] - new_x_adj
+        return (int(new_y), int(new_x))
     
     def get_center(self, corners):
         corners = corners.reshape((4, 2))
@@ -232,7 +245,6 @@ class ChessViz:
             
             ret, frame = cap.read()
             frame = self.get_crop(frame, self.big_crop) 
-            frame = self.resize_image(frame, 1)
             total += 1
             # Detect ArUco markers in the video frame
             (corners, ids, rejected) = cv2.aruco.detectMarkers(frame, self.ARUCO_DICT)
@@ -244,35 +256,51 @@ class ChessViz:
                 # ids = ids.flatten()
                 # # Loop over the detected ArUco corners
                 for (marker_corner, marker_id) in zip(corners, ids):
-            
-                    # Extract the marker corners
-                    corners = marker_corner.reshape((4, 2))
-                    (top_left, top_right, bottom_right, bottom_left) = corners
-                    
-                    # Convert the (x,y) coordinate pairs to integers
-                    top_right = (int(top_right[0]), int(top_right[1]))
-                    bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
-                    bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
-                    top_left = (int(top_left[0]), int(top_left[1]))
-                    
-                    # Draw the bounding box of the ArUco detection
-                    cv2.line(frame, top_left, top_right, (0, 255, 0), 2)
-                    cv2.line(frame, top_right, bottom_right, (0, 255, 0), 2)
-                    cv2.line(frame, bottom_right, bottom_left, (0, 255, 0), 2)
-                    cv2.line(frame, bottom_left, top_left, (0, 255, 0), 2)
-                    
-                    # Calculate and draw the center of the ArUco marker
-                    center_y = int((top_left[0] + bottom_right[0]) / 2.0)
-                    center_x = int((top_left[1] + bottom_right[1]) / 2.0)
-                    cv2.circle(frame, (center_y, center_x), 4, (0, 0, 255), -1)
-                    
-                    # Draw the ArUco marker ID on the video frame
-                    # The ID is always located at the top_left of the ArUco marker
-                    cv2.putText(frame, str(marker_id), 
-                    (top_left[0], top_left[1] - 15),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.5, (0, 255, 0), 2)
-                    self.get_chess_piece(center_y, center_x, marker_id, chess_arrays[sample_counter])
+                    if marker_id[0] >= 0 and marker_id[0] < 12:
+                        # Extract the marker corners
+                        corners = marker_corner.reshape((4, 2))
+                        (top_left, top_right, bottom_right, bottom_left) = corners
+                        
+                        # Convert the (x,y) coordinate pairs to integers
+                        top_right = (int(top_right[0]), int(top_right[1]))
+                        bottom_right = (int(bottom_right[0]), int(bottom_right[1]))
+                        bottom_left = (int(bottom_left[0]), int(bottom_left[1]))
+                        top_left = (int(top_left[0]), int(top_left[1]))
+                        
+                        # Draw the bounding box of the ArUco detection
+                        cv2.line(frame, top_left, top_right, (0, 255, 0), 2)
+                        cv2.line(frame, top_right, bottom_right, (0, 255, 0), 2)
+                        cv2.line(frame, bottom_right, bottom_left, (0, 255, 0), 2)
+                        cv2.line(frame, bottom_left, top_left, (0, 255, 0), 2)
+                        
+                        # Calculate the center of the ArUco marker in Big Crop coordinates
+                        aruco_center_y = int((top_left[0] + bottom_right[0]) / 2.0)
+                        aruco_center_x = int((top_left[1] + bottom_right[1]) / 2.0)
+                        # Convert to image coordinates
+                        aruco_center_y = aruco_center_y + self.big_crop[0][0]
+                        aruco_center_x = aruco_center_x + self.big_crop[0][1]
+                        # Calculate the center of the base
+                        base_center_y, base_center_x = self.get_base_center((aruco_center_y, aruco_center_x), self.CHESS_DICT[marker_id[0]])
+                        # Convert back to Big Crop coordinates
+                        base_center_y = base_center_y - self.big_crop[0][0]
+                        base_center_x = base_center_x - self.big_crop[0][1]
+                        aruco_center_y = aruco_center_y - self.big_crop[0][0]
+                        aruco_center_x = aruco_center_x - self.big_crop[0][1]
+                        base_center = (base_center_y, base_center_x)
+                        aruco_center = (aruco_center_y, aruco_center_x)
+
+                        # Debug
+                        print("base center: ", base_center)
+                        print("aruco center: ", aruco_center)
+                        cv2.line(frame, aruco_center, base_center, (0, 0, 255), 2)
+                        
+                        # Draw the ArUco marker ID on the video frame
+                        # The ID is always located at the top_left of the ArUco marker
+                        cv2.putText(frame, str(marker_id), 
+                        (top_left[0], top_left[1] - 15),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.5, (0, 255, 0), 2)
+                        self.get_chess_piece(base_center_y, base_center_x, marker_id, chess_arrays[sample_counter])
             
 
             # Display the resulting frame
