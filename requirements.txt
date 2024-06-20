@@ -6,4 +6,4 @@ opencv-contrib-python==4.9.0.80
 opencv-python==4.9.0.80
 Pillow==9.3.0
 stockfish==3.28.0
-ur_rtde==1.5.8
+ur-rtde==1.5.8

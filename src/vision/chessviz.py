@@ -26,7 +26,7 @@ class ChessViz:
         11: "R",
     }
 
-    def __init__(self, big_crop, small_crop, cam_index=0):
+    def __init__(self, big_crop, small_crop, cam_index=1):
         self.big_crop = big_crop  # [[y value, x value], sidelength]
         self.small_crop = small_crop  # [[y value, x value], sidelength]
         self.cam_index = cam_index
