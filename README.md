@@ -67,6 +67,7 @@ Add to path: `mv stockfish-ubuntu-x86-64 /usr/bin/stockfish`
 `sudo apt install cmake`  
 `sudo add-apt-repository ppa:sdurobotics/ur-rtde`  
 `apt-get install python3-tk`  
+`sudo apt-get install libusb-1.0-0-dev libudev-dev`  
 `sudo apt-get update`  
 `sudo apt install librtde librtde-dev`  
 If `pip install -r requirements.txt` does not correctly install ur_rtde, run `pip install ur-rtde --use-pep517`
@@ -94,3 +95,11 @@ Download stockfish [here](https://stockfishchess.org/download/)
 [Stockfish and python-chess tutorial](https://github.com/rogerfitz/tutorials/blob/master/python_chess/0_Chess_Basics.ipynb)
 
 [Chess elo levels](https://en.wikipedia.org/wiki/Chess_rating_system)
+
+[Azure Kinect DK Hardware](https://learn.microsoft.com/en-us/azure/kinect-dk/hardware-specification)
+
+[OpenCV troubleshooting](https://stackoverflow.com/questions/27953069/opencv-error-215size-width0-size-height0-in-function-imshow)
+
+[hidapi documentation](https://blog.thea.codes/talking-to-gamepads-without-pygame/)
+
+[hidapi repository](https://github.com/trezor/cython-hidapi#install)
