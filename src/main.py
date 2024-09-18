@@ -19,13 +19,10 @@ import chess.polyglot
 from stockfish import Stockfish
 from stockfish import StockfishException
 from colorama import Fore
-from vision.chessviz import ChessViz
 import threading
 from button_input import connectToButton, listenForButton
 
-chessviz = ChessViz([[190, 390], 410], [[230, 424], 348], cam_index=1)
-
-HOSTNAME = "192.168.2.81"  # Replace with the IP address of your Universal Robot
+HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
 HOST_PORT = 30002  # The port to send commands to the robot
 RTDE_FREQUENCY = 10  # Hz to update data from robot
 
@@ -127,10 +124,10 @@ zero_player_mode = input(
     + "Would you like to let stockfish play against itself? (no player input) (y/N)"
 )
 
-print(zero_player_mode)
-if zero_player_mode == "y" or zero_player_mode == "Y":
+if zero_player_mode.lower() == "y":
     print(Fore.LIGHTMAGENTA_EX + "Entering zero player mode!")
     zero_player_mode = "TRUE"
+    chess_vision_mode = False  # No need for vision in zero-player mode
 else:
     print(Fore.GREEN + "Continuing with normal mode!")
     chess_vision_mode = input(
@@ -142,8 +139,22 @@ else:
     if chess_vision_mode.lower() == "y":
         print(Fore.GREEN + "Continuing with chess vision mode!")
         chess_vision_mode = True
+
+        # Import ChessViz only if chess vision mode is enabled
+        from vision.chessviz import ChessViz
+
+        chessviz = ChessViz([[190, 390], 410], [[230, 424], 348], cam_index=1)
+
+        # Initialize vision thread and lock
+        sample_size = 20
+        vision_thread = threading.Thread(
+            target=chessviz.chess_array_update_thread, args=(sample_size,)
+        )
+        vision_thread.start()
+        lock = threading.Lock()
     else:
         chess_vision_mode = False
+
 
 start_new_game = input(
     Fore.YELLOW + "Would you like to continue the last saved game? (Y/n)"
@@ -491,12 +502,14 @@ def update_board_with_vision(chess_array, board):
     return False
 
 
-sample_size = 20
-vision_thread = threading.Thread(
-    target=chessviz.chess_array_update_thread, args=(sample_size,)
-)
-vision_thread.start()
-lock = threading.Lock()
+if chess_vision_mode:
+    sample_size = 20
+    vision_thread = threading.Thread(
+        target=chessviz.chess_array_update_thread, args=(sample_size,)
+    )
+    vision_thread.start()
+    lock = threading.Lock()
+
 
 while not board.is_game_over():
     if zero_player_mode == "TRUE":
