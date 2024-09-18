@@ -7,3 +7,4 @@ opencv-python==4.9.0.80
 Pillow==10.3.0
 stockfish==3.28.0
 ur-rtde==1.5.8
+PyYAML==5.4.1

@@ -12,11 +12,11 @@ def connectToButton():
     gamepad.close()
     try:
         gamepad.open(0x2E8A, 0x010A)
-        print(Fore.GREEN + "Connected to device")
+        print(Fore.GREEN + "Connected to button")
         global connectionStatus
         connectionStatus = True
     except IOError:
-        print(Fore.RED + "Could not open device")
+        print(Fore.RED + "Could not connect to button")
 
 
 connectToButton()
@@ -35,14 +35,14 @@ def listenForButton():
                     break
                 previous_state = pressed[0]
         except IOError:
-            print(Fore.YELLOW + "Error reading from device")
+            print(Fore.YELLOW + "Error reading from button")
             connectionStatus = False
             gamepad.close()
             while connectionStatus is False:
                 try:
-                    print(Fore.YELLOW + "Reconnecting to device")
+                    print(Fore.YELLOW + "Reconnecting to button")
                     connectToButton()
                     sleep(1)
                 except IOError:
-                    print(Fore.RED + "Could not reconnect to device")
+                    print(Fore.RED + "Could not reconnect to button")
                     sleep(1)
