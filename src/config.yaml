@@ -1,0 +1,82 @@
+# === Robot Configuration ===
+
+robot:
+  hostname: "192.168.56.101" # IP address of your Universal Robot
+  host_port: 30002 # Port to send commands to the robot
+  rtde_frequency: 10 # Frequency to update data from robot (Hz)
+
+# === Robot Parameters ===
+
+robot_parameters:
+  angle: 44.785 # Angle between robot base and chessboard (degrees)
+  dx: 403.90 # Home TCP X position relative to base (mm)
+  dy: -571.83 # Home TCP Y position relative to base (mm)
+  board_height: 0.1254 # Height of the chessboard (meters)
+  lift_height: 0.3794 # Height to lift pieces (meters)
+  tcp_rx: 2.7821 # TCP rotation around X-axis (radians)
+  tcp_ry: -1.465 # TCP rotation around Y-axis (radians)
+  tcp_rz: -0.0416 # TCP rotation around Z-axis (radians)
+  bin_position:
+    x: 202.8 # X position to move when not in use (mm)
+    y: -254.93 # Y position to move when not in use (mm)
+  move_speed: 1 # Speed of the tool (m/s)
+  move_accel: 1 # Acceleration of the tool (m/s²)
+
+# === Force Control Parameters ===
+
+force_control:
+  force_seconds: 2 # Duration of the force mode (seconds)
+  task_frame: [0, 0, 0, 0, 0, 0] # A pose vector that defines the force frame relative to the base frame.
+  selection_vector: [0, 0, 1, 0, 0, 0] # A 6d vector that defines which degrees of freedom are controlled by the force/torque sensor.
+  tcp_down: [
+      0,
+      0,
+      -30, # -0.1 newton force in negative z direction (onto the piece)
+      0,
+      0,
+      0,
+    ] # The force vector [x, y, z, rx, ry, rz] in the force frame.
+  force_type: 2 # Type of force to apply
+  limits: [2, 2, 0.01, 1, 1, 1] # TCP speed limits [x, y, z, rx, ry, rz]
+
+# === Piece Heights (meters) ===
+
+piece_heights:
+  k: 0.07749 # Black King
+  K: 0.07949 # White King
+  p: 0.03545 # Black Pawn
+  P: 0.03545 # White Pawn
+  r: 0.041 # Black Rook
+  R: 0.041 # White Rook
+  n: 0.04569 # Knight (both)
+  N: 0.04569 # Knight (both)
+  b: 0.05702 # Bishop (both)
+  B: 0.05702 # Bishop (both)
+  q: 0.070 # Black Queen
+  Q: 0.070 # White Queen
+
+# === Stockfish Difficulty Levels (ELO Ratings) ===
+
+stockfish_difficulty_level: # dictionary to store the ELO difficulty levels of stockfish
+  easy: 600
+  medium: 1500
+  expert: 2100
+  gm: 3500
+
+# === Vision Parameters ===
+
+vision:
+  sample_size: 20 # Number of samples for vision processing
+  cam_index: 1 # Camera index for ChessViz
+  board_corners: # Coordinates for ChessViz initialization
+    - [190, 390]
+    - 410
+  another_parameter:
+    - [230, 424]
+    - 348
+
+# === Miscellaneous ===
+
+misc: # Not enabled at the moment
+#  chessviz_enabled: false # Enable ChessViz (computer vision)
+#  zero_player_mode: false # Enable zero-player mode (Stockfish vs. Stockfish)

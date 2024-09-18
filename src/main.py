@@ -21,62 +21,51 @@ from stockfish import StockfishException
 from colorama import Fore
 import threading
 from button_input import connectToButton, listenForButton
+import yaml
 
-HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
-HOST_PORT = 30002  # The port to send commands to the robot
-RTDE_FREQUENCY = 10  # Hz to update data from robot
+# Load configuration from config.yaml
+with open("config.yaml", "r") as config_file:
+    config = yaml.safe_load(config_file)
+
+
+HOSTNAME = config["robot"]["hostname"]  # The IP address of your Universal Robot
+HOST_PORT = config["robot"]["host_port"]  # The port to send commands to the robot
+RTDE_FREQUENCY = config["robot"]["rtde_frequency"]  # Hz to update data from robot
+
+# Robot Parameters
+ANGLE = config["robot_parameters"]["angle"]
+DX = config["robot_parameters"]["dx"]
+DY = config["robot_parameters"]["dy"]
+BOARD_HEIGHT = config["robot_parameters"]["board_height"]
+LIFT_HEIGHT = config["robot_parameters"]["lift_height"]
+TCP_RX = config["robot_parameters"]["tcp_rx"]
+TCP_RY = config["robot_parameters"]["tcp_ry"]
+TCP_RZ = config["robot_parameters"]["tcp_rz"]
+BIN_POSITION = config["robot_parameters"]["bin_position"]
+MOVE_SPEED = config["robot_parameters"]["move_speed"]
+MOVE_ACCEL = config["robot_parameters"]["move_accel"]
+
+# Force Control Parameters
+FORCE_SECONDS = config["force_control"]["force_seconds"]
+task_frame = config["force_control"]["task_frame"]
+selection_vector = config["force_control"]["selection_vector"]
+tcp_down = config["force_control"]["tcp_down"]
+FORCE_TYPE = config["force_control"]["force_type"]
+limits = config["force_control"]["limits"]
+
+# Piece Heights
+PIECE_HEIGHTS = config["piece_heights"]
+
+# Stockfish Difficulty Levels
+stockfish_difficulty_level = config["stockfish_difficulty_level"]
 
 rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME, RTDE_FREQUENCY)
 rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME, RTDE_FREQUENCY)
 control_interface = rtde_control.RTDEControlInterface(HOSTNAME, RTDE_FREQUENCY)
 
-ANGLE = 44.785  # angle between the robot base and the chess board (in degrees)
-DX = 403.90  # Home TCP position relative to base (in mm)
-DY = -571.83
 
-BOARD_HEIGHT = (
-    0.1229
-    + 0.0025  # height of the board (in meters), measured as TCP Z relative to base
-)
+# TODO fix this
 LIFT_HEIGHT = BOARD_HEIGHT + 0.254  # height of the lift (in meters)
-
-TCP_RX = 2.7821  # rx (x rotation of TCP in radians)
-TCP_RY = -1.465  # ry (y rotation of TCP in radians)
-TCP_RZ = -0.0416  # rz (z rotation of TCP in radians)
-
-BIN_POSITION = {"x": 202.8, "y": -254.93}  # position to move to when not in use
-
-MOVE_SPEED = 1  # speed of the tool [m/s]
-MOVE_ACCEL = 1  # acceleration of the tool [m/s^2]
-
-FORCE_SECONDS = 2  # duration of the force mode in seconds
-
-task_frame = [
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-]  # A pose vector that defines the force frame relative to the base frame.
-selection_vector = [
-    0,
-    0,
-    1,
-    0,
-    0,
-    0,
-]  # A 6d vector that defines which degrees of freedom are controlled by the force/torque sensor.
-tcp_down = [
-    0,
-    0,
-    -30,  # -0.1 newton force in negative z direction (onto the piece)
-    0,
-    0,
-    0,
-]  # The force vector [x, y, z, rx, ry, rz] in the force frame.
-FORCE_TYPE = 2  # The type of force to apply
-limits = [2, 2, 0.01, 1, 1, 1]  # The tcp speed limits [x, y, z, rx, ry, rz]
 
 TCP_CONTACT = (
     control_interface.toolContact(  # this is not implemented correctly in python
@@ -84,27 +73,6 @@ TCP_CONTACT = (
     )
 )  # Check if the TCP is in contact with the piece
 
-PIECE_HEIGHTS = {
-    "k": 0.08049 - 0.003,
-    "K": 0.08049 - 0.001,
-    "p": 0.03345 + 0.002,  # add 2mm to the height of the pawn
-    "P": 0.03345 + 0.002,  # add 2mm to the height of the pawn
-    "r": 0.053 - 0.012,
-    "R": 0.053 - 0.012,
-    "n": 0.04569,
-    "N": 0.04569,
-    "b": 0.05902 - 0.002,
-    "B": 0.05902 - 0.002,
-    "q": 0.068 + 0.002,
-    "Q": 0.068 + 0.002,
-}  # dictionary to store the heights of the pieces in meters
-
-stockfish_difficulty_level = {
-    "easy": 600,
-    "medium": 1500,
-    "expert": 2100,
-    "gm": 3500,
-}  # dictionary to store the ELO difficulty levels of stockfish
 
 osSystem = platform.system()  # Get the OS
 if osSystem == "Darwin" or osSystem == "Linux":
@@ -143,10 +111,14 @@ else:
         # Import ChessViz only if chess vision mode is enabled
         from vision.chessviz import ChessViz
 
-        chessviz = ChessViz([[190, 390], 410], [[230, 424], 348], cam_index=1)
+        chessviz = ChessViz(
+            config["vision"]["board_corners"][0],
+            config["vision"]["board_corners"][1],
+            cam_index=config["vision"]["cam_index"],
+        )
 
         # Initialize vision thread and lock
-        sample_size = 20
+        sample_size = config["vision"]["sample_size"]
         vision_thread = threading.Thread(
             target=chessviz.chess_array_update_thread, args=(sample_size,)
         )
