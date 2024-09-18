@@ -12,7 +12,7 @@ robot_parameters:
   dx: 403.90 # Home TCP X position relative to base (mm)
   dy: -571.83 # Home TCP Y position relative to base (mm)
   board_height: 0.1254 # Height of the chessboard (meters)
-  lift_height: 0.3794 # Height to lift pieces (meters)
+  board_lift_height: 0.254 # extra distance to place the arm from the board (in meters)
   tcp_rx: 2.7821 # TCP rotation around X-axis (radians)
   tcp_ry: -1.465 # TCP rotation around Y-axis (radians)
   tcp_rz: -0.0416 # TCP rotation around Z-axis (radians)

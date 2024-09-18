@@ -15,7 +15,6 @@ import rtde_control
 import chess
 import chess.svg
 import chess.engine
-import chess.polyglot
 from stockfish import Stockfish
 from stockfish import StockfishException
 from colorama import Fore
@@ -37,7 +36,8 @@ ANGLE = config["robot_parameters"]["angle"]
 DX = config["robot_parameters"]["dx"]
 DY = config["robot_parameters"]["dy"]
 BOARD_HEIGHT = config["robot_parameters"]["board_height"]
-LIFT_HEIGHT = config["robot_parameters"]["lift_height"]
+BOARD_LIFT_HEIGHT = config["robot_parameters"]["board_lift_height"]
+LIFT_HEIGHT = BOARD_LIFT_HEIGHT + BOARD_HEIGHT
 TCP_RX = config["robot_parameters"]["tcp_rx"]
 TCP_RY = config["robot_parameters"]["tcp_ry"]
 TCP_RZ = config["robot_parameters"]["tcp_rz"]
@@ -63,9 +63,6 @@ rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME, RTDE_FREQUENCY)
 rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME, RTDE_FREQUENCY)
 control_interface = rtde_control.RTDEControlInterface(HOSTNAME, RTDE_FREQUENCY)
 
-
-# TODO fix this
-LIFT_HEIGHT = BOARD_HEIGHT + 0.254  # height of the lift (in meters)
 
 TCP_CONTACT = (
     control_interface.toolContact(  # this is not implemented correctly in python
@@ -136,11 +133,16 @@ if start_new_game != "y" and start_new_game != "Y" and start_new_game != "":
     print(Fore.GREEN + "New game started!")
     print(board)
 else:
-    with open("lastgame.txt", "r", encoding="utf-8") as file:
-        lastgame = file.read()
-        board = chess.Board(lastgame)  # Load the last saved game
+    try:
+        with open("lastgame.txt", "r", encoding="utf-8") as file:
+            lastgame = file.read()
+            board = chess.Board(lastgame)  # Load the last saved game
+            print(board)
+            print(Fore.GREEN + "Last game loaded!")
+    except FileNotFoundError:
+        board = chess.Board()
+        print(Fore.RED + "No last game found, starting new game!")
         print(board)
-        print(Fore.GREEN + "Last game loaded!")
 
 
 def translate(x, y):
@@ -299,8 +301,8 @@ def save_last_play():
 
 
 # Opening UR10 head positions JSON file
-f = open("setup.json", encoding="utf-8")
-data = json.load(f)
+with open("setup.json", encoding="utf-8") as f:
+    data = json.load(f)
 
 
 stockfish = Stockfish(path=stockfishPath)
