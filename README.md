@@ -59,10 +59,11 @@ If `pip install -r requirements.txt` does not correctly install ur_rtde, run `pi
 
 ### Linux _(Ubuntu 22.04 recommended)_
 
-Download the latest 64-bit version of stockfish [here](https://stockfishchess.org/download/linux/)
-`tar -xvf stockfish-ubuntu-x86-64.tar`  
-Add to path: `mv stockfish-ubuntu-x86-64 /usr/bin/stockfish`
+<!-- Download the latest 64-bit version of stockfish [here](https://stockfishchess.org/download/linux/)
+`tar -xvf stockfish-ubuntu-x86-64.tar`
+Add to path: `mv stockfish-ubuntu-x86-64 /usr/bin/stockfish` -->
 
+`sudo apt-get install stockfish`
 `sudo apt-get install libboost-all-dev`  
 `sudo apt install cmake`  
 `sudo add-apt-repository ppa:sdurobotics/ur-rtde`  
@@ -74,12 +75,8 @@ If `pip install -r requirements.txt` does not correctly install ur_rtde, run `pi
 
 ### Windows
 
-Download stockfish [here](https://stockfishchess.org/download/)
+Run the `install.bat` file to install the required dependencies.
 
-- It may be helpful to add [stockfish to PATH](https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53)
-
-[Install boost](https://www.geeksforgeeks.org/how-to-install-c-boost-libraries-on-windows/)  
-[Install cmake](https://cmake.org/download/)  
 `pip install -r requirements.txt`
 
 ## Resources
