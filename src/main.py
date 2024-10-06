@@ -4,7 +4,6 @@ This script is used to control the UR10 robot to play chess against the Stockfis
 
 import platform
 import subprocess
-from time import sleep
 import random
 import json
 import chess
@@ -18,12 +17,6 @@ from button_input import connectToButton, listenForButton
 import yaml
 from robot_api.api import (
     move_to_square,
-    forcemode_lower,
-    lift_piece,
-    lower_piece,
-    send_command_to_robot,
-    OUTPUT_24,
-    OUTPUT_0,
     disconnect_from_robot,
     direct_move_piece,
     remove_piece,
@@ -33,32 +26,11 @@ from robot_api.api import (
 with open("config.yaml", "r") as config_file:
     config = yaml.safe_load(config_file)
 
-
-HOSTNAME = config["robot"]["hostname"]  # The IP address of your Universal Robot
-HOST_PORT = config["robot"]["host_port"]  # The port to send commands to the robot
-RTDE_FREQUENCY = config["robot"]["rtde_frequency"]  # Hz to update data from robot
-
 # Robot Parameters
-ANGLE = config["robot_parameters"]["angle"]
-DX = config["robot_parameters"]["dx"]
-DY = config["robot_parameters"]["dy"]
 BOARD_HEIGHT = config["robot_parameters"]["board_height"]
 BOARD_LIFT_HEIGHT = config["robot_parameters"]["board_lift_height"]
 LIFT_HEIGHT = BOARD_LIFT_HEIGHT + BOARD_HEIGHT
-TCP_RX = config["robot_parameters"]["tcp_rx"]
-TCP_RY = config["robot_parameters"]["tcp_ry"]
-TCP_RZ = config["robot_parameters"]["tcp_rz"]
 BIN_POSITION = config["robot_parameters"]["bin_position"]
-MOVE_SPEED = config["robot_parameters"]["move_speed"]
-MOVE_ACCEL = config["robot_parameters"]["move_accel"]
-
-# Force Control Parameters
-FORCE_SECONDS = config["force_control"]["force_seconds"]
-task_frame = config["force_control"]["task_frame"]
-selection_vector = config["force_control"]["selection_vector"]
-tcp_down = config["force_control"]["tcp_down"]
-FORCE_TYPE = config["force_control"]["force_type"]
-limits = config["force_control"]["limits"]
 
 # Piece Heights
 PIECE_HEIGHTS = config["piece_heights"]
