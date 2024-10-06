@@ -27,9 +27,7 @@ with open("config.yaml", "r") as config_file:
     config = yaml.safe_load(config_file)
 
 # Robot Parameters
-BOARD_HEIGHT = config["robot_parameters"]["board_height"]
 BOARD_LIFT_HEIGHT = config["robot_parameters"]["board_lift_height"]
-LIFT_HEIGHT = BOARD_LIFT_HEIGHT + BOARD_HEIGHT
 BIN_POSITION = config["robot_parameters"]["bin_position"]
 
 # Piece Heights
@@ -187,8 +185,6 @@ class Move:
         current_board,
         position_data,
         current_move,
-        board_height,
-        lift_height,
     ):
         move_from = current_move[:2]  # from square
         move_to = current_move[-2:]  # to square
@@ -210,8 +206,6 @@ class Move:
         self.to_piece_type = to_piece_type
         self.move_from = move_from
         self.move_to = move_to
-        self.board_height = board_height
-        self.lift_height = lift_height
 
     def main_direct_move_piece(self):
         """
@@ -284,7 +278,7 @@ if chess_vision_mode:
 
 while not board.is_game_over():
     if zero_player_mode == "TRUE":
-        move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
+        move_to_square(BIN_POSITION)  # move to the side position
         print(Fore.CYAN + "Moving to bin position...")
         display_board()  # Update the board svg
 
@@ -302,13 +296,13 @@ while not board.is_game_over():
             else:
                 move = "e8g8"  # e.g. "e2e4" or "e7e5"
             REMOVING_PIECE = 0
-            move_pos = Move(PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT)
+            move_pos = Move(PIECE_HEIGHTS, board, data, move)
             move_pos.main_direct_move_piece()
             if board.turn == chess.WHITE:
                 move = "h1f1"  # e.g. "e2e4" or "e7e5"
             else:
                 move = "h8f8"  # e.g. "e2e4" or "e7e5"
-            move_pos = Move(PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT)
+            move_pos = Move(PIECE_HEIGHTS, board, data, move)
             move_pos.main_direct_move_piece()
             save_last_play()  # Save the last played move
         elif board.is_queenside_castling(uci_format_bestMove):
@@ -318,13 +312,13 @@ while not board.is_game_over():
             else:
                 move = "e8c8"  # e.g. "e2e4" or "e7e5"
             REMOVING_PIECE = 0
-            move_pos = Move(PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT)
+            move_pos = Move(PIECE_HEIGHTS, board, data, move)
             move_pos.main_direct_move_piece()
             if board.turn == chess.WHITE:
                 move = "a1d1"  # e.g. "e2e4" or "e7e5"
             else:
                 move = "a8d8"  # e.g. "e2e4" or "e7e5"
-            move_pos = Move(PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT)
+            move_pos = Move(PIECE_HEIGHTS, board, data, move)
             move_pos.main_direct_move_piece()
             save_last_play()  # Save the last played move
 
@@ -336,9 +330,7 @@ while not board.is_game_over():
                 REMOVING_PIECE = 0
 
                 move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-                move_pos = Move(
-                    PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                )
+                move_pos = Move(PIECE_HEIGHTS, board, data, move)
                 move_pos.main_direct_move_piece()
                 save_last_play()  # Save the last played move
 
@@ -351,9 +343,7 @@ while not board.is_game_over():
                 REMOVING_PIECE = 1
 
                 move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-                move_pos = Move(
-                    PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                )
+                move_pos = Move(PIECE_HEIGHTS, board, data, move)
                 move_pos.main_remove_piece()
                 move_pos.main_direct_move_piece()
                 save_last_play()  # Save the last played move
@@ -374,7 +364,7 @@ while not board.is_game_over():
             board.push_san("0000")  # Push a blank move to the board
             save_last_play()  # Save the last played move
             continue
-        move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
+        move_to_square(BIN_POSITION)  # move to the side position
         print(Fore.CYAN + "Moving to bin position...")
 
         print(Fore.WHITE + "Legal moves:")
@@ -467,18 +457,14 @@ while not board.is_game_over():
                 else:
                     move = "e8g8"  # e.g. "e2e4" or "e7e5"
                 REMOVING_PIECE = 0
-                move_pos = Move(
-                    PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                )
+                move_pos = Move(PIECE_HEIGHTS, board, data, move)
 
                 move_pos.main_direct_move_piece()
                 if board.turn == chess.WHITE:
                     move = "h1f1"  # e.g. "e2e4" or "e7e5"
                 else:
                     move = "h8f8"  # e.g. "e2e4" or "e7e5"
-                move_pos = Move(
-                    PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                )
+                move_pos = Move(PIECE_HEIGHTS, board, data, move)
 
                 move_pos.main_direct_move_piece()
                 save_last_play()  # Save the last played move
@@ -489,17 +475,13 @@ while not board.is_game_over():
                 else:
                     move = "e8c8"  # e.g. "e2e4" or "e7e5"
                 REMOVING_PIECE = 0
-                move_pos = Move(
-                    PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                )
+                move_pos = Move(PIECE_HEIGHTS, board, data, move)
                 move_pos.main_direct_move_piece()
                 if board.turn == chess.WHITE:
                     move = "a1d1"  # e.g. "e2e4" or "e7e5"
                 else:
                     move = "a8d8"  # e.g. "e2e4" or "e7e5"
-                move_pos = Move(
-                    PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                )
+                move_pos = Move(PIECE_HEIGHTS, board, data, move)
                 move_pos.main_direct_move_piece()
                 save_last_play()  # Save the last played move
 
@@ -511,9 +493,7 @@ while not board.is_game_over():
                     REMOVING_PIECE = 0
 
                     move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-                    move_pos = Move(
-                        PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                    )
+                    move_pos = Move(PIECE_HEIGHTS, board, data, move)
                     move_pos.main_direct_move_piece()
                     save_last_play()  # Save the last played move
 
@@ -526,9 +506,7 @@ while not board.is_game_over():
                     REMOVING_PIECE = 1
 
                     move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-                    move_pos = Move(
-                        PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                    )
+                    move_pos = Move(PIECE_HEIGHTS, board, data, move)
                     move_pos.main_remove_piece()
                     move_pos.main_direct_move_piece()
                     save_last_play()  # Save the last played move
@@ -544,7 +522,7 @@ while not board.is_game_over():
             print(Fore.RED + "Not a legal move, Please try again")
 
 
-move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
+move_to_square(BIN_POSITION)  # move to the side position
 print(Fore.CYAN + "Moving to bin position...")
 
 print(board.outcome())  # Print the winner of the game

@@ -53,7 +53,7 @@ def translate(x, y):
     return x1 + DX, y1 + DY
 
 
-def move_to_square(pos, height):
+def move_to_square(pos, height=LIFT_HEIGHT):
     """
     Move the TCP to a given position on the chess board
     """
@@ -194,8 +194,8 @@ def disconnect_from_robot():
 
 
 def direct_move_piece(move, removing_piece):
-    board_height = move.from_position_height + move.board_height
-    move_to_square(move.from_pos, move.lift_height)
+    board_height = move.from_position_height + BOARD_HEIGHT
+    move_to_square(move.from_pos, LIFT_HEIGHT)
     print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
     move_to_square(move.from_pos, board_height)
@@ -205,20 +205,20 @@ def direct_move_piece(move, removing_piece):
     print(Fore.CYAN + "Lifting piece...")
     lift_piece(move.from_pos)
     print("Moving piece to", move.move_to)
-    move_to_square(move.to_pos, move.lift_height)
+    move_to_square(move.to_pos, LIFT_HEIGHT)
     print("Lowering piece...")
     lower_piece(move, removing_piece)
     print(Fore.LIGHTBLUE_EX + "De-energizing electromagnet...")
     send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
     sleep(1)
-    move_to_square(move.to_pos, move.lift_height)
+    move_to_square(move.to_pos, LIFT_HEIGHT)
     print(Fore.CYAN + "Piece moved successfully!")
 
 
 def remove_piece(move, board, origin_square):
-    board_height = move.to_position_height + move.board_height
+    board_height = move.to_position_height + BOARD_HEIGHT
     print("Removing piece", board.piece_at(origin_square), "from", move.move_to)
-    move_to_square(move.to_pos, move.lift_height)
+    move_to_square(move.to_pos, LIFT_HEIGHT)
     print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
     send_command_to_robot(OUTPUT_24)  # energize the electromagnet
     move_to_square(move.to_pos, board_height)
@@ -226,12 +226,12 @@ def remove_piece(move, board, origin_square):
     sleep(0.2)
     forcemode_lower()
     print(Fore.CYAN + "Lifting piece...")
-    move_to_square(move.to_pos, move.lift_height)
+    move_to_square(move.to_pos, LIFT_HEIGHT)
     lift_piece(move.to_pos)
     print("Moving piece to ex")
-    move_to_square(BIN_POSITION, move.lift_height)  # move to the side position
+    move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
     print(Fore.LIGHTBLUE_EX + "De-energizing electromagnet...")
     send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
-    move_to_square(BIN_POSITION, move.lift_height)
-    move_to_square(BIN_POSITION, move.lift_height)
+    move_to_square(BIN_POSITION, LIFT_HEIGHT)
+    move_to_square(BIN_POSITION, LIFT_HEIGHT)
     print(Fore.CYAN + "Piece removed successfully!")
