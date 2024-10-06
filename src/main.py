@@ -4,14 +4,8 @@ This script is used to control the UR10 robot to play chess against the Stockfis
 
 import platform
 import subprocess
-from time import sleep
 import random
-import socket
 import json
-import math
-import rtde_io
-import rtde_receive
-import rtde_control
 import chess
 import chess.svg
 import chess.engine
@@ -21,54 +15,22 @@ from colorama import Fore
 import threading
 from button_input import connectToButton, listenForButton
 import yaml
+from robot_api.api import (
+    move_to_square,
+    disconnect_from_robot,
+    direct_move_piece,
+    remove_piece,
+)
 
 # Load configuration from config.yaml
 with open("config.yaml", "r") as config_file:
     config = yaml.safe_load(config_file)
-
-
-HOSTNAME = config["robot"]["hostname"]  # The IP address of your Universal Robot
-HOST_PORT = config["robot"]["host_port"]  # The port to send commands to the robot
-RTDE_FREQUENCY = config["robot"]["rtde_frequency"]  # Hz to update data from robot
-
-# Robot Parameters
-ANGLE = config["robot_parameters"]["angle"]
-DX = config["robot_parameters"]["dx"]
-DY = config["robot_parameters"]["dy"]
-BOARD_HEIGHT = config["robot_parameters"]["board_height"]
-BOARD_LIFT_HEIGHT = config["robot_parameters"]["board_lift_height"]
-LIFT_HEIGHT = BOARD_LIFT_HEIGHT + BOARD_HEIGHT
-TCP_RX = config["robot_parameters"]["tcp_rx"]
-TCP_RY = config["robot_parameters"]["tcp_ry"]
-TCP_RZ = config["robot_parameters"]["tcp_rz"]
-BIN_POSITION = config["robot_parameters"]["bin_position"]
-MOVE_SPEED = config["robot_parameters"]["move_speed"]
-MOVE_ACCEL = config["robot_parameters"]["move_accel"]
-
-# Force Control Parameters
-FORCE_SECONDS = config["force_control"]["force_seconds"]
-task_frame = config["force_control"]["task_frame"]
-selection_vector = config["force_control"]["selection_vector"]
-tcp_down = config["force_control"]["tcp_down"]
-FORCE_TYPE = config["force_control"]["force_type"]
-limits = config["force_control"]["limits"]
 
 # Piece Heights
 PIECE_HEIGHTS = config["piece_heights"]
 
 # Stockfish Difficulty Levels
 stockfish_difficulty_level = config["stockfish_difficulty_level"]
-
-rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME, RTDE_FREQUENCY)
-rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME, RTDE_FREQUENCY)
-control_interface = rtde_control.RTDEControlInterface(HOSTNAME, RTDE_FREQUENCY)
-
-
-TCP_CONTACT = (
-    control_interface.toolContact(  # this is not implemented correctly in python
-        [0, 0, 1, 0, 0, 0]  # a workaround may be moveUntilContact
-    )
-)  # Check if the TCP is in contact with the piece
 
 
 osSystem = platform.system()  # Get the OS
@@ -145,141 +107,6 @@ else:
         print(board)
 
 
-def translate(x, y):
-    """
-    Rotate a point by a given angle in a 2d space
-    """
-    x1 = y * math.cos(ANGLE) - x * math.sin(ANGLE)
-    y1 = y * math.sin(ANGLE) + x * math.cos(ANGLE)
-    return x1 + DX, y1 + DY
-
-
-def move_to_square(pos, height):
-    """
-    Move the TCP to a given position on the chess board
-    """
-    robot_position = translate(pos["x"], pos["y"])
-    control_interface.moveL(
-        [
-            robot_position[0] / 1000,  # x
-            robot_position[1] / 1000,  # y
-            height,  # z (height of the chess board)
-            TCP_RX,  # rx (x rotation of TCP in radians)
-            TCP_RY,  # ry (y rotation of TCP in radians)
-            TCP_RZ,  # rz (z rotation of TCP in radians)
-        ],
-        MOVE_SPEED,  # speed: speed of the tool [m/s]
-        MOVE_ACCEL,  # acceleration: acceleration of the tool [m/s^2]
-    )
-
-
-def forcemode_lower():
-    """
-    Lower the TCP to make contact with the piece
-    """
-    tcp_cycles = 0
-    while TCP_CONTACT == 0 and tcp_cycles < 15:
-        t_start = control_interface.initPeriod()
-        # Move the robot down for 2 seconds
-        tcp_cycles += 1
-        control_interface.forceMode(
-            task_frame, selection_vector, tcp_down, FORCE_TYPE, limits
-        )
-        control_interface.waitPeriod(t_start)
-    if tcp_cycles == 20:
-        print(Fore.RED + "TCP was not able to find the piece")
-    control_interface.forceModeStop()
-
-
-def lift_piece(pos):
-    """
-    Lift the piece from the board
-    """
-    robot_position = translate(pos["x"], pos["y"])
-    sleep(0.5)
-    control_interface.moveL(
-        [
-            robot_position[0] / 1000,  # x
-            robot_position[1] / 1000,  # y
-            LIFT_HEIGHT,  # z (height to lift piece)
-            TCP_RX,  # rx (x rotation of TCP in radians)
-            TCP_RY,  # ry (y rotation of TCP in radians)
-            TCP_RZ,  # rz (z rotation of TCP in radians)
-        ],
-        MOVE_SPEED,  # speed: speed of the tool [m/s]
-        MOVE_ACCEL,  # acceleration: acceleration of the tool [m/s^2]
-    )
-    sleep(0.5)
-
-
-def lower_piece(move_instance):
-    """
-    Lower the piece to the board
-    """
-    robot_position = translate(move_instance.to_pos["x"], move_instance.to_pos["y"])
-    if REMOVING_PIECE == 1:
-        control_interface.moveL(
-            [
-                robot_position[0] / 1000,  # x
-                robot_position[1] / 1000,  # y
-                move_instance.from_position_height
-                + BOARD_HEIGHT,  # z (height to lift piece)
-                TCP_RX,  # rx (x rotation of TCP in radians)
-                TCP_RY,  # ry (y rotation of TCP in radians)
-                TCP_RZ,  # rz (z rotation of TCP in radians)
-            ],
-            MOVE_SPEED,  # speed: speed of the tool [m/s]
-            MOVE_ACCEL,  # acceleration: acceleration of the tool [m/s^2]
-        )
-    else:
-        control_interface.moveL(
-            [
-                robot_position[0] / 1000,  # x
-                robot_position[1] / 1000,  # y
-                move_instance.to_position_height
-                + BOARD_HEIGHT,  # z (height to lift piece)
-                TCP_RX,  # rx (x rotation of TCP in radians)
-                TCP_RY,  # ry (y rotation of TCP in radians)
-                TCP_RZ,  # rz (z rotation of TCP in radians)
-            ],
-            MOVE_SPEED,  # speed: speed of the tool [m/s]
-            MOVE_ACCEL,  # acceleration: acceleration of the tool [m/s^2]
-        )
-    sleep(0.5)
-
-
-def send_command_to_robot(command):
-    """
-    Send a command to the robot directly using a socket connection
-    """
-    # Connect to the robot
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((HOSTNAME, HOST_PORT))
-
-    # Send the command to the robot
-    sock.send(bytes(command, "utf-8"))
-
-    # Receive and print the response from the robot
-    # response = sock.recv(1024)
-    # print("Response from robot:", response)
-
-    # Close the connection
-    sock.close()
-    sleep(0.5)  # Allow the piece to attach to the electromagnet
-
-
-OUTPUT_24 = "sec myProg():\n\
-    set_tool_voltage(24)\n\
-end\n\
-myProg()\n"
-
-
-OUTPUT_0 = "sec myProg():\n\
-    set_tool_voltage(0)\n\
-end\n\
-myProg()\n"
-
-
 def display_board():
     """
     Display the chess board by writing it to a SVG file.
@@ -354,8 +181,6 @@ class Move:
         current_board,
         position_data,
         current_move,
-        board_height,
-        lift_height,
     ):
         move_from = current_move[:2]  # from square
         move_to = current_move[-2:]  # to square
@@ -377,10 +202,8 @@ class Move:
         self.to_piece_type = to_piece_type
         self.move_from = move_from
         self.move_to = move_to
-        self.board_height = board_height
-        self.lift_height = lift_height
 
-    def direct_move_piece(self):
+    def main_direct_move_piece(self):
         """
         Directly move a piece from one position to another on the chess board
         """
@@ -392,49 +215,13 @@ class Move:
             "to",
             self.move_to,
         )
-        board_height = self.from_position_height + self.board_height
-        move_to_square(self.from_pos, self.lift_height)
-        print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
-        send_command_to_robot(OUTPUT_24)  # energize the electromagnet
-        move_to_square(self.from_pos, board_height)
-        print(Fore.CYAN + "Lowering TCP...")
-        sleep(0.2)
-        forcemode_lower()
-        print(Fore.CYAN + "Lifting piece...")
-        lift_piece(self.from_pos)
-        print("Moving piece to", self.move_to)
-        move_to_square(self.to_pos, self.lift_height)
-        print("Lowering piece...")
-        lower_piece(self)
-        print(Fore.LIGHTBLUE_EX + "De-energizing electromagnet...")
-        send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
-        sleep(1)
-        move_to_square(self.to_pos, self.lift_height)
-        print(Fore.CYAN + "Piece moved successfully!")
+        direct_move_piece(self, REMOVING_PIECE)
 
-    def remove_piece(self):
+    def main_remove_piece(self):
         """
         Remove a piece from the chess board
         """
-        board_height = self.to_position_height + self.board_height
-        print("Removing piece", board.piece_at(origin_square), "from", self.move_to)
-        move_to_square(self.to_pos, self.lift_height)
-        print(Fore.LIGHTBLUE_EX + "Energizing electromagnet...")
-        send_command_to_robot(OUTPUT_24)  # energize the electromagnet
-        move_to_square(self.to_pos, board_height)
-        print(Fore.CYAN + "Lowering TCP...")
-        sleep(0.2)
-        forcemode_lower()
-        print(Fore.CYAN + "Lifting piece...")
-        move_to_square(self.to_pos, self.lift_height)
-        lift_piece(self.to_pos)
-        print("Moving piece to ex")
-        move_to_square(BIN_POSITION, self.lift_height)  # move to the side position
-        print(Fore.LIGHTBLUE_EX + "De-energizing electromagnet...")
-        send_command_to_robot(OUTPUT_0)  # de-energize the electromagnet
-        move_to_square(BIN_POSITION, self.lift_height)
-        move_to_square(BIN_POSITION, self.lift_height)
-        print(Fore.CYAN + "Piece removed successfully!")
+        remove_piece(self, board, origin_square)
 
 
 # converts 2d array in san format to concise fen(cfen), i.e. a fen without values
@@ -487,7 +274,7 @@ if chess_vision_mode:
 
 while not board.is_game_over():
     if zero_player_mode == "TRUE":
-        move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
+        move_to_square()  # move to the side position
         print(Fore.CYAN + "Moving to bin position...")
         display_board()  # Update the board svg
 
@@ -505,14 +292,14 @@ while not board.is_game_over():
             else:
                 move = "e8g8"  # e.g. "e2e4" or "e7e5"
             REMOVING_PIECE = 0
-            move_pos = Move(PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT)
-            move_pos.direct_move_piece()
+            move_pos = Move(PIECE_HEIGHTS, board, data, move)
+            move_pos.main_direct_move_piece()
             if board.turn == chess.WHITE:
                 move = "h1f1"  # e.g. "e2e4" or "e7e5"
             else:
                 move = "h8f8"  # e.g. "e2e4" or "e7e5"
-            move_pos = Move(PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT)
-            move_pos.direct_move_piece()
+            move_pos = Move(PIECE_HEIGHTS, board, data, move)
+            move_pos.main_direct_move_piece()
             save_last_play()  # Save the last played move
         elif board.is_queenside_castling(uci_format_bestMove):
             print("Stockfish is castling queenside")
@@ -521,14 +308,14 @@ while not board.is_game_over():
             else:
                 move = "e8c8"  # e.g. "e2e4" or "e7e5"
             REMOVING_PIECE = 0
-            move_pos = Move(PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT)
-            move_pos.direct_move_piece()
+            move_pos = Move(PIECE_HEIGHTS, board, data, move)
+            move_pos.main_direct_move_piece()
             if board.turn == chess.WHITE:
                 move = "a1d1"  # e.g. "e2e4" or "e7e5"
             else:
                 move = "a8d8"  # e.g. "e2e4" or "e7e5"
-            move_pos = Move(PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT)
-            move_pos.direct_move_piece()
+            move_pos = Move(PIECE_HEIGHTS, board, data, move)
+            move_pos.main_direct_move_piece()
             save_last_play()  # Save the last played move
 
         else:
@@ -539,10 +326,8 @@ while not board.is_game_over():
                 REMOVING_PIECE = 0
 
                 move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-                move_pos = Move(
-                    PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                )
-                move_pos.direct_move_piece()
+                move_pos = Move(PIECE_HEIGHTS, board, data, move)
+                move_pos.main_direct_move_piece()
                 save_last_play()  # Save the last played move
 
             else:
@@ -554,11 +339,9 @@ while not board.is_game_over():
                 REMOVING_PIECE = 1
 
                 move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-                move_pos = Move(
-                    PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                )
-                move_pos.remove_piece()
-                move_pos.direct_move_piece()
+                move_pos = Move(PIECE_HEIGHTS, board, data, move)
+                move_pos.main_remove_piece()
+                move_pos.main_direct_move_piece()
                 save_last_play()  # Save the last played move
 
         print(
@@ -577,7 +360,7 @@ while not board.is_game_over():
             board.push_san("0000")  # Push a blank move to the board
             save_last_play()  # Save the last played move
             continue
-        move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
+        move_to_square()  # move to the side position
         print(Fore.CYAN + "Moving to bin position...")
 
         print(Fore.WHITE + "Legal moves:")
@@ -670,20 +453,16 @@ while not board.is_game_over():
                 else:
                     move = "e8g8"  # e.g. "e2e4" or "e7e5"
                 REMOVING_PIECE = 0
-                move_pos = Move(
-                    PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                )
+                move_pos = Move(PIECE_HEIGHTS, board, data, move)
 
-                move_pos.direct_move_piece()
+                move_pos.main_direct_move_piece()
                 if board.turn == chess.WHITE:
                     move = "h1f1"  # e.g. "e2e4" or "e7e5"
                 else:
                     move = "h8f8"  # e.g. "e2e4" or "e7e5"
-                move_pos = Move(
-                    PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                )
+                move_pos = Move(PIECE_HEIGHTS, board, data, move)
 
-                move_pos.direct_move_piece()
+                move_pos.main_direct_move_piece()
                 save_last_play()  # Save the last played move
             elif board.is_queenside_castling(uci_format_bestMove):
                 print("Stockfish is castling queenside")
@@ -692,18 +471,14 @@ while not board.is_game_over():
                 else:
                     move = "e8c8"  # e.g. "e2e4" or "e7e5"
                 REMOVING_PIECE = 0
-                move_pos = Move(
-                    PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                )
-                move_pos.direct_move_piece()
+                move_pos = Move(PIECE_HEIGHTS, board, data, move)
+                move_pos.main_direct_move_piece()
                 if board.turn == chess.WHITE:
                     move = "a1d1"  # e.g. "e2e4" or "e7e5"
                 else:
                     move = "a8d8"  # e.g. "e2e4" or "e7e5"
-                move_pos = Move(
-                    PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                )
-                move_pos.direct_move_piece()
+                move_pos = Move(PIECE_HEIGHTS, board, data, move)
+                move_pos.main_direct_move_piece()
                 save_last_play()  # Save the last played move
 
             else:
@@ -714,10 +489,8 @@ while not board.is_game_over():
                     REMOVING_PIECE = 0
 
                     move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-                    move_pos = Move(
-                        PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                    )
-                    move_pos.direct_move_piece()
+                    move_pos = Move(PIECE_HEIGHTS, board, data, move)
+                    move_pos.main_direct_move_piece()
                     save_last_play()  # Save the last played move
 
                 else:
@@ -729,11 +502,9 @@ while not board.is_game_over():
                     REMOVING_PIECE = 1
 
                     move = bestMove[0]["Move"]  # e.g. "e2e4" or "e7e5"
-                    move_pos = Move(
-                        PIECE_HEIGHTS, board, data, move, BOARD_HEIGHT, LIFT_HEIGHT
-                    )
-                    move_pos.remove_piece()
-                    move_pos.direct_move_piece()
+                    move_pos = Move(PIECE_HEIGHTS, board, data, move)
+                    move_pos.main_remove_piece()
+                    move_pos.main_direct_move_piece()
                     save_last_play()  # Save the last played move
 
             print(
@@ -747,10 +518,10 @@ while not board.is_game_over():
             print(Fore.RED + "Not a legal move, Please try again")
 
 
-move_to_square(BIN_POSITION, LIFT_HEIGHT)  # move to the side position
+move_to_square()  # move to the side position
 print(Fore.CYAN + "Moving to bin position...")
 
 print(board.outcome())  # Print the winner of the game
 print(Fore.GREEN + "Game over!")
 
-control_interface.stopScript()  # Disconnect from the robot
+disconnect_from_robot()
