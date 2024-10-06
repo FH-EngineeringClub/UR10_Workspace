@@ -53,7 +53,7 @@ def translate(x, y):
     return x1 + DX, y1 + DY
 
 
-def move_to_square(pos, height=LIFT_HEIGHT):
+def move_to_square(pos=BIN_POSITION, height=LIFT_HEIGHT):
     """
     Move the TCP to a given position on the chess board
     """

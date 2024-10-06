@@ -26,10 +26,6 @@ from robot_api.api import (
 with open("config.yaml", "r") as config_file:
     config = yaml.safe_load(config_file)
 
-# Robot Parameters
-BOARD_LIFT_HEIGHT = config["robot_parameters"]["board_lift_height"]
-BIN_POSITION = config["robot_parameters"]["bin_position"]
-
 # Piece Heights
 PIECE_HEIGHTS = config["piece_heights"]
 
@@ -278,7 +274,7 @@ if chess_vision_mode:
 
 while not board.is_game_over():
     if zero_player_mode == "TRUE":
-        move_to_square(BIN_POSITION)  # move to the side position
+        move_to_square()  # move to the side position
         print(Fore.CYAN + "Moving to bin position...")
         display_board()  # Update the board svg
 
@@ -364,7 +360,7 @@ while not board.is_game_over():
             board.push_san("0000")  # Push a blank move to the board
             save_last_play()  # Save the last played move
             continue
-        move_to_square(BIN_POSITION)  # move to the side position
+        move_to_square()  # move to the side position
         print(Fore.CYAN + "Moving to bin position...")
 
         print(Fore.WHITE + "Legal moves:")
@@ -522,7 +518,7 @@ while not board.is_game_over():
             print(Fore.RED + "Not a legal move, Please try again")
 
 
-move_to_square(BIN_POSITION)  # move to the side position
+move_to_square()  # move to the side position
 print(Fore.CYAN + "Moving to bin position...")
 
 print(board.outcome())  # Print the winner of the game
