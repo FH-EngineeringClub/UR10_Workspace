@@ -6,10 +6,16 @@ import math
 import rtde_io
 import rtde_receive
 import rtde_control
+import yaml
 
-HOSTNAME = "192.168.56.101"  # Replace with the IP address of your Universal Robot
-HOST_PORT = 30002  # The port to send commands to the robot
-RTDE_FREQUENCY = 10  # Hz to update data from robot
+# Load configuration from config.yaml
+with open("config.yaml", "r") as config_file:
+    config = yaml.safe_load(config_file)
+
+# Robot Configuration
+HOSTNAME = config["robot"]["hostname"]  # The IP address of your Universal Robot
+HOST_PORT = config["robot"]["host_port"]  # The port to send commands to the robot
+RTDE_FREQUENCY = config["robot"]["rtde_frequency"]  # Hz to update data from robot
 
 rtde_io_ = rtde_io.RTDEIOInterface(HOSTNAME, RTDE_FREQUENCY)
 rtde_receive_ = rtde_receive.RTDEReceiveInterface(HOSTNAME, RTDE_FREQUENCY)
@@ -33,11 +39,12 @@ def position(base, shoulder, elbow, w1, w2, w3):
     )
 
 
-position(-67, -87, -119, -63, 89, -101)  # home position
-position(-10, -92, -119, -55, 89, 0)
-position(37, -33, -148, -86, 86, 100)
-position(37, -88, -8, -170, 85, 100)
-position(-65, -88, -8, -170, 85, 100)
-position(-67, -87, -119, -63, 89, -101)  # home position
+while True:
+    position(-67, -87, -119, -63, 89, -101)  # home position
+    position(-10, -92, -119, -55, 89, 0)
+    position(37, -33, -148, -86, 86, 100)
+    position(37, -88, -8, -170, 85, 100)
+    position(-65, -88, -8, -170, 85, 100)
+    position(-67, -87, -119, -63, 89, -101)  # home position
 
 control_interface.stopScript()
